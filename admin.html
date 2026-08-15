@@ -772,13 +772,15 @@
             <label>分類 *</label>
             <select id="productCategory" required>
               <option value="">請選擇</option>
-              <option>肉品</option>
-              <option>海鮮</option>
-              <option>火鍋料</option>
-              <option>早餐／麵食</option>
-              <option>點心／甜點</option>
-              <option>其他</option>
             </select>
+            <input
+              id="customCategory"
+              class="hidden"
+              type="text"
+              maxlength="30"
+              placeholder="輸入新分類名稱，例如：炸物"
+              style="margin-top:8px"
+            >
           </div>
 
           <div class="field">
@@ -942,6 +944,7 @@
     productId: document.getElementById("productId"),
     productName: document.getElementById("productName"),
     productCategory: document.getElementById("productCategory"),
+    customCategory: document.getElementById("customCategory"),
     productPrice: document.getElementById("productPrice"),
     productSpec: document.getElementById("productSpec"),
     productWarehouse: document.getElementById("productWarehouse"),
@@ -1102,8 +1105,60 @@
     products = data || [];
 
     buildCategoryFilter();
+    buildProductCategoryOptions();
     updateSummary();
     renderProducts();
+  }
+
+  const defaultCategories = [
+    "肉品",
+    "海鮮",
+    "火鍋料",
+    "早餐／麵食",
+    "點心／甜點",
+    "其他"
+  ];
+
+  function getAllCategories() {
+    return [...new Set([
+      ...defaultCategories,
+      ...products.map(p => p.category).filter(Boolean)
+    ])];
+  }
+
+  function buildProductCategoryOptions(selected = "") {
+    const categories = getAllCategories();
+
+    els.productCategory.innerHTML =
+      '<option value="">請選擇</option>';
+
+    categories.forEach(category => {
+      const option = document.createElement("option");
+      option.value = category;
+      option.textContent = category;
+      els.productCategory.appendChild(option);
+    });
+
+    const addOption = document.createElement("option");
+    addOption.value = "__new__";
+    addOption.textContent = "＋ 新增分類";
+    els.productCategory.appendChild(addOption);
+
+    if (selected && categories.includes(selected)) {
+      els.productCategory.value = selected;
+    }
+  }
+
+  function syncCustomCategoryField() {
+    const isNew = els.productCategory.value === "__new__";
+    els.customCategory.classList.toggle("hidden", !isNew);
+    els.customCategory.required = isNew;
+
+    if (isNew) {
+      setTimeout(() => els.customCategory.focus(), 0);
+    } else {
+      els.customCategory.value = "";
+    }
   }
 
   function buildCategoryFilter() {
@@ -1323,6 +1378,11 @@
 
     els.productId.value = "";
 
+    buildProductCategoryOptions();
+    els.customCategory.value = "";
+    els.customCategory.classList.add("hidden");
+    els.customCategory.required = false;
+
     els.stockStatus.value =
       "in_stock";
 
@@ -1361,8 +1421,10 @@
     els.productName.value =
       product.name || "";
 
-    els.productCategory.value =
-      product.category || "";
+    buildProductCategoryOptions(product.category || "");
+    els.customCategory.value = "";
+    els.customCategory.classList.add("hidden");
+    els.customCategory.required = false;
 
     els.productPrice.value =
       product.price ?? 0;
@@ -1617,12 +1679,21 @@
         els.saveProductBtn.textContent =
           "儲存商品中...";
 
+        const selectedCategory =
+          els.productCategory.value === "__new__"
+            ? els.customCategory.value.trim()
+            : els.productCategory.value;
+
+        if (!selectedCategory) {
+          throw new Error("請選擇或輸入商品分類");
+        }
+
         const payload = {
           name:
             els.productName.value.trim(),
 
           category:
-            els.productCategory.value,
+            selectedCategory,
 
           price:
             Number(
@@ -1712,6 +1783,11 @@
           "儲存商品";
       }
     }
+  );
+
+  els.productCategory.addEventListener(
+    "change",
+    syncCustomCategoryField
   );
 
   els.addBtn.addEventListener(
