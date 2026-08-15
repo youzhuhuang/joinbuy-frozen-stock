@@ -592,6 +592,16 @@
       box-shadow:0 12px 35px rgba(0,0,0,.22);
     }
 
+    /* CATEGORY MANAGEMENT */
+    .category-manager{padding:14px;margin-bottom:14px}
+    .category-manager-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+    .category-manager-head h3{margin:0;color:var(--brown);font-size:16px}
+    .category-list{display:flex;flex-wrap:wrap;gap:8px}
+    .category-chip{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:7px 8px 7px 11px}
+    .category-chip-name{font-weight:800;color:var(--brown2);font-size:12px}
+    .category-chip button{border:0;background:#f6eee5;border-radius:7px;padding:5px 7px;cursor:pointer;font-weight:800;color:var(--brown2)}
+    .category-chip .cat-delete{color:var(--red);background:var(--red-bg)}
+
     @media(max-width:620px){
       .summary{grid-template-columns:repeat(3,1fr)}
       .summary-card{padding:11px}
@@ -678,6 +688,14 @@
         <button id="refreshBtn" class="btn">重新整理</button>
         <button id="addBtn" class="btn btn-add">＋ 新增商品</button>
       </div>
+    </div>
+
+    <div class="card category-manager">
+      <div class="category-manager-head">
+        <h3>分類管理</h3>
+        <button id="addCategoryBtn" class="btn btn-add" type="button">＋ 新增分類</button>
+      </div>
+      <div id="categoryList" class="category-list"></div>
     </div>
 
     <div class="summary">
@@ -921,6 +939,8 @@
     adminEmail: document.getElementById("adminEmail"),
     refreshBtn: document.getElementById("refreshBtn"),
     addBtn: document.getElementById("addBtn"),
+    addCategoryBtn: document.getElementById("addCategoryBtn"),
+    categoryList: document.getElementById("categoryList"),
 
     totalCount: document.getElementById("totalCount"),
     stockCount: document.getElementById("stockCount"),
@@ -1104,6 +1124,7 @@
 
     products = data || [];
 
+    renderCategoryManager();
     buildCategoryFilter();
     buildProductCategoryOptions();
     updateSummary();
@@ -1111,20 +1132,89 @@
   }
 
   const defaultCategories = [
-    "肉品",
-    "海鮮",
-    "火鍋料",
-    "早餐／麵食",
-    "點心／甜點",
-    "其他"
+    "肉品", "海鮮", "火鍋料", "早餐／麵食", "點心／甜點", "其他"
   ];
 
+  const CATEGORY_STORAGE_KEY = "joinbuy_custom_categories_v1";
+
+  function getSavedCategories() {
+    try {
+      const value = JSON.parse(localStorage.getItem(CATEGORY_STORAGE_KEY) || "[]");
+      return Array.isArray(value) ? value.filter(Boolean) : [];
+    } catch { return []; }
+  }
+
+  function saveCategories(categories) {
+    localStorage.setItem(CATEGORY_STORAGE_KEY, JSON.stringify([...new Set(categories.filter(Boolean))]));
+  }
+
   function getAllCategories() {
+    const hidden = JSON.parse(localStorage.getItem("joinbuy_hidden_categories_v1") || "[]");
     return [...new Set([
-      ...defaultCategories,
+      ...defaultCategories.filter(c => !hidden.includes(c)),
+      ...getSavedCategories(),
       ...products.map(p => p.category).filter(Boolean)
     ])];
   }
+
+  function renderCategoryManager() {
+    const categories = getAllCategories();
+    els.categoryList.innerHTML = categories.map(category => `
+      <div class="category-chip">
+        <span class="category-chip-name">${escapeHtml(category)}</span>
+        <button type="button" onclick='renameCategory(${JSON.stringify(category)})'>修改</button>
+        <button type="button" class="cat-delete" onclick='deleteCategory(${JSON.stringify(category)})'>刪除</button>
+      </div>
+    `).join("");
+  }
+
+  function refreshCategoryUI() {
+    renderCategoryManager();
+    buildCategoryFilter();
+    buildProductCategoryOptions();
+    renderProducts();
+  }
+
+  function addCategory() {
+    const name = (prompt("請輸入新的分類名稱：") || "").trim();
+    if (!name) return;
+    if (getAllCategories().includes(name)) { toast("這個分類已經存在"); return; }
+    saveCategories([...getSavedCategories(), name]);
+    refreshCategoryUI();
+    toast(`已新增分類「${name}」`);
+  }
+
+  window.renameCategory = async function(oldName) {
+    const newName = (prompt(`修改分類名稱：`, oldName) || "").trim();
+    if (!newName || newName === oldName) return;
+    if (getAllCategories().includes(newName)) { toast("這個分類名稱已經存在"); return; }
+    const affected = products.filter(p => p.category === oldName).length;
+    if (affected && !confirm(`目前有 ${affected} 項商品使用「${oldName}」。\n\n修改後，這些商品會一起改成「${newName}」。確定嗎？`)) return;
+    if (affected) {
+      const { error } = await db.from("products").update({category:newName}).eq("category", oldName);
+      if (error) { toast("修改分類失敗：" + error.message); return; }
+    }
+    let saved = getSavedCategories().filter(c => c !== oldName);
+    saved.push(newName);
+    saveCategories(saved);
+    toast("分類修改完成");
+    await loadProducts();
+  };
+
+  window.deleteCategory = async function(name) {
+    const affected = products.filter(p => p.category === name).length;
+    if (affected) {
+      alert(`「${name}」目前還有 ${affected} 項商品使用中。\n\n請先把這些商品改到其他分類，再刪除這個分類。`);
+      return;
+    }
+    if (!confirm(`確定要刪除分類「${name}」嗎？`)) return;
+    saveCategories(getSavedCategories().filter(c => c !== name));
+    // 預設分類若刪除，在本機記錄隱藏
+    const hidden = JSON.parse(localStorage.getItem("joinbuy_hidden_categories_v1") || "[]");
+    if (defaultCategories.includes(name)) localStorage.setItem("joinbuy_hidden_categories_v1", JSON.stringify([...new Set([...hidden,name])]));
+    refreshCategoryUI();
+    toast("分類已刪除");
+  };
 
   function buildProductCategoryOptions(selected = "") {
     const categories = getAllCategories();
@@ -1789,6 +1879,8 @@
     "change",
     syncCustomCategoryField
   );
+
+  els.addCategoryBtn.addEventListener("click", addCategory);
 
   els.addBtn.addEventListener(
     "click",
