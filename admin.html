@@ -494,6 +494,44 @@
       cursor:pointer;
     }
 
+
+    /* EXPIRY */
+    .expiry-note{
+      margin-top:6px;
+      font-size:11px;
+      color:var(--muted);
+    }
+
+    .expiry-badge{
+      display:inline-block;
+      margin-top:4px;
+      padding:4px 7px;
+      border-radius:7px;
+      font-size:10px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    .expiry-normal{
+      background:var(--green-bg);
+      color:var(--green);
+    }
+
+    .expiry-soon{
+      background:var(--orange-bg);
+      color:var(--orange);
+    }
+
+    .expiry-urgent{
+      background:#ffe4d6;
+      color:#b84d19;
+    }
+
+    .expiry-expired{
+      background:var(--red-bg);
+      color:var(--red);
+    }
+
     /* MODAL */
     .modal-backdrop{
       position:fixed;
@@ -749,6 +787,7 @@
             <th>分類</th>
             <th>售價</th>
             <th>倉位</th>
+            <th>效期</th>
             <th>庫存</th>
             <th>上架狀態</th>
             <th>操作</th>
@@ -810,6 +849,12 @@
         <div class="field">
           <label>規格</label>
           <input id="productSpec" placeholder="例如：1kg／包">
+        </div>
+
+        <div class="field">
+          <label>商品效期</label>
+          <input id="expiryDate" type="date">
+          <div class="expiry-note">未填可留白；後台會依日期自動顯示到期提醒。</div>
         </div>
 
         <div class="field">
@@ -967,6 +1012,7 @@
     customCategory: document.getElementById("customCategory"),
     productPrice: document.getElementById("productPrice"),
     productSpec: document.getElementById("productSpec"),
+    expiryDate: document.getElementById("expiryDate"),
     productWarehouse: document.getElementById("productWarehouse"),
     stockStatus: document.getElementById("stockStatus"),
     listingStatus: document.getElementById("listingStatus"),
@@ -1333,6 +1379,37 @@
     });
   }
 
+
+  function parseDateOnly(value) {
+    if (!value) return null;
+    const [y,m,d] = value.split("-").map(Number);
+    if (!y || !m || !d) return null;
+    return new Date(y, m - 1, d);
+  }
+
+  function formatDateOnly(value) {
+    const date = parseDateOnly(value);
+    if (!date) return "—";
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}/${m}/${d}`;
+  }
+
+  function getExpiryInfo(value) {
+    const expiry = parseDateOnly(value);
+    if (!expiry) return { text:"未設定", cls:"expiry-normal", days:null };
+
+    const today = new Date();
+    const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const diff = Math.ceil((expiry - todayOnly) / 86400000);
+
+    if (diff < 0) return { text:"已過效期", cls:"expiry-expired", days:diff };
+    if (diff <= 7) return { text:`${diff === 0 ? "今日到期" : `剩 ${diff} 天`}・優先出清`, cls:"expiry-urgent", days:diff };
+    if (diff <= 30) return { text:`即將到期・剩 ${diff} 天`, cls:"expiry-soon", days:diff };
+    return { text:"效期正常", cls:"expiry-normal", days:diff };
+  }
+
   function renderProducts() {
     const list =
       getFilteredProducts();
@@ -1403,6 +1480,13 @@
 
             <td>
               ${escapeHtml(product.warehouse || "")}
+            </td>
+
+            <td>
+              <div>${formatDateOnly(product.expiry_date)}</div>
+              <span class="expiry-badge ${getExpiryInfo(product.expiry_date).cls}">
+                ${getExpiryInfo(product.expiry_date).text}
+              </span>
             </td>
 
             <td>${stock}</td>
@@ -1521,6 +1605,9 @@
 
     els.productSpec.value =
       product.spec || "";
+
+    els.expiryDate.value =
+      product.expiry_date || "";
 
     els.productWarehouse.value =
       product.warehouse || "";
@@ -1792,6 +1879,9 @@
 
           spec:
             els.productSpec.value.trim() || null,
+
+          expiry_date:
+            els.expiryDate.value || null,
 
           warehouse:
             els.productWarehouse.value,
