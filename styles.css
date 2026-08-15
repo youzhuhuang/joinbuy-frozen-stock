@@ -1,0 +1,49 @@
+
+:root{
+  --bg:#f7f1e8;--panel:#fffdf9;--line:#e8dac8;--brown:#4d2f18;
+  --brown2:#7c5736;--muted:#807267;--green:#5e8b45;--greenbg:#e7f1dd;
+  --gray:#797979;--graybg:#eeeeec;--shadow:0 10px 26px rgba(76,47,24,.08)
+}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,#fbf7f0,#f7f1e8);color:#2b2119;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
+button,input{font:inherit}
+.topbar{position:sticky;top:0;z-index:10;background:rgba(255,253,249,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:11px 14px}
+.brand{max-width:1080px;margin:auto;display:flex;align-items:center;gap:10px}
+.logo{width:42px;height:42px;border-radius:12px;background:var(--brown);display:grid;place-items:center;color:white;font-size:21px}
+.brand h1{margin:0;color:var(--brown);font-size:20px;letter-spacing:.06em}
+.brand p{margin:1px 0 0;color:var(--muted);font-size:12px}
+.shell{width:min(1080px,calc(100% - 20px));margin:12px auto 42px}
+.hero{display:flex;align-items:center;justify-content:space-between;min-height:155px;padding:22px;border:1px solid var(--line);border-radius:22px;background:radial-gradient(circle at 85% 25%,rgba(255,255,255,.65),transparent 25%),linear-gradient(135deg,#d7b28b,#f1dfc8);box-shadow:var(--shadow);overflow:hidden}
+.eyebrow{font-size:11px;font-weight:800;color:var(--brown2);letter-spacing:.06em}
+.hero h2{margin:7px 0 6px;font-size:27px;color:var(--brown)}
+.hero p{margin:0;color:#6e5745;font-size:13px}
+.hero-icons{font-size:39px;filter:drop-shadow(0 8px 10px rgba(60,30,10,.12));white-space:nowrap}
+.controls{margin:13px 0;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:12px;box-shadow:var(--shadow)}
+.search{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:white;border-radius:13px;padding:0 12px}
+.search input{width:100%;height:44px;border:0;outline:0;background:transparent}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding-top:11px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:0;background:#efe7dc;color:var(--brown2);font-weight:700;border-radius:999px;padding:8px 13px;white-space:nowrap}
+.tab.active{background:var(--brown);color:white}
+.heading{display:flex;align-items:end;justify-content:space-between;padding:8px 2px 12px}
+.heading h3{margin:0;font-size:20px}.heading p{margin:3px 0 0;color:var(--muted);font-size:12px}
+.refresh,.retry{border:1px solid var(--line);background:white;color:var(--brown2);font-weight:700;border-radius:10px;padding:8px 11px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:17px;overflow:hidden;box-shadow:var(--shadow)}
+.media{height:132px;background:linear-gradient(135deg,#ead7bd,#f7ecdc);display:grid;place-items:center;overflow:hidden}
+.media img{width:100%;height:100%;object-fit:cover}
+.fallback{font-size:51px}
+.body{padding:11px}
+.category{font-size:10px;color:var(--brown2);font-weight:700}
+.name{font-size:14px;line-height:1.45;margin:4px 0 4px}
+.spec{font-size:11px;color:var(--muted);min-height:16px;margin:0 0 10px}
+.bottom{display:flex;align-items:end;justify-content:space-between;gap:7px}
+.price{font-size:17px;font-weight:800;color:#a94f24}
+.badge{font-size:10px;font-weight:800;padding:4px 6px;border-radius:7px;white-space:nowrap}
+.in{background:var(--greenbg);color:var(--green)}.out{background:var(--graybg);color:var(--gray)}
+.state{text-align:center;padding:65px 20px;color:var(--muted)}
+.state-icon{font-size:46px}.state h3{color:#2b2119;margin:8px 0 3px}.state p{margin:0 0 14px;font-size:13px}
+.spinner{width:34px;height:34px;border-radius:50%;border:4px solid #e8dac8;border-top-color:#7c5736;margin:0 auto 12px;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}} .hidden{display:none!important}
+footer{text-align:center;padding:22px 12px 34px;color:#8f7d6f;font-size:11px}
+@media(min-width:760px){.grid{grid-template-columns:repeat(4,1fr)}.media{height:175px}.hero{min-height:195px;padding:32px}.hero h2{font-size:36px}.hero-icons{font-size:64px}.body{padding:14px}.name{font-size:16px}}
