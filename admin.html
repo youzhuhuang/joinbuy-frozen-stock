@@ -423,6 +423,77 @@
       margin:5px 0;
     }
 
+    /* IMAGE UPLOAD */
+    .image-upload{
+      border:1px dashed #cdb394;
+      background:#fbf6ef;
+      border-radius:14px;
+      padding:12px;
+    }
+
+    .image-picker{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .image-file{
+      position:absolute;
+      width:1px;
+      height:1px;
+      opacity:0;
+      pointer-events:none;
+    }
+
+    .image-pick-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--brown);
+      border-radius:10px;
+      padding:10px 13px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .image-help{
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.5;
+      flex:1 1 180px;
+    }
+
+    .image-preview-wrap{
+      margin-top:11px;
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+    }
+
+    .image-preview{
+      width:112px;
+      height:112px;
+      object-fit:cover;
+      border-radius:13px;
+      border:1px solid var(--line);
+      background:#efe4d5;
+    }
+
+    .remove-image-btn{
+      border:1px solid #edc9c5;
+      background:#fff;
+      color:var(--red);
+      border-radius:9px;
+      padding:8px 10px;
+      font-weight:800;
+      font-size:11px;
+      cursor:pointer;
+    }
+
     /* MODAL */
     .modal-backdrop{
       position:fixed;
@@ -490,6 +561,11 @@
       color:white;
       background:var(--brown);
       font-weight:800;
+    }
+
+    .save-btn:disabled{
+      opacity:.55;
+      cursor:not-allowed;
     }
 
     .cancel-btn{
@@ -684,6 +760,7 @@
       <div class="modal-body">
 
         <input id="productId" type="hidden">
+        <input id="currentImageUrl" type="hidden">
 
         <div class="field">
           <label>商品名稱 *</label>
@@ -753,12 +830,39 @@
         </div>
 
         <div class="field">
-          <label>商品圖片網址</label>
-          <input
-            id="imageUrl"
-            type="url"
-            placeholder="之後會改成直接上傳圖片"
-          >
+          <label>商品圖片</label>
+
+          <div class="image-upload">
+            <div class="image-picker">
+              <input
+                id="imageFile"
+                class="image-file"
+                type="file"
+                accept="image/*"
+              >
+
+              <label for="imageFile" class="image-pick-btn">
+                📷 選擇商品圖片
+              </label>
+
+              <div class="image-help">
+                手機可從相簿／拍照選擇，電腦可從資料夾選擇。<br>
+                建議使用 JPG、PNG 或 WEBP 圖片。
+              </div>
+            </div>
+
+            <div id="imagePreviewWrap" class="image-preview-wrap hidden">
+              <img id="imagePreview" class="image-preview" alt="商品圖片預覽">
+
+              <button
+                id="removeImageBtn"
+                class="remove-image-btn"
+                type="button"
+              >
+                移除圖片
+              </button>
+            </div>
+          </div>
         </div>
 
         <div class="field">
@@ -794,6 +898,8 @@
 
   const SUPABASE_KEY =
     "sb_publishable_3npPxEjVJEr6zL0DodRoIQ_MTu4TPy0";
+
+  const STORAGE_BUCKET = "product-images";
 
   const db = window.supabase.createClient(
     SUPABASE_URL,
@@ -841,7 +947,11 @@
     productWarehouse: document.getElementById("productWarehouse"),
     stockStatus: document.getElementById("stockStatus"),
     listingStatus: document.getElementById("listingStatus"),
-    imageUrl: document.getElementById("imageUrl"),
+    imageFile: document.getElementById("imageFile"),
+    currentImageUrl: document.getElementById("currentImageUrl"),
+    imagePreviewWrap: document.getElementById("imagePreviewWrap"),
+    imagePreview: document.getElementById("imagePreview"),
+    removeImageBtn: document.getElementById("removeImageBtn"),
     description: document.getElementById("description"),
     saveProductBtn: document.getElementById("saveProductBtn"),
 
@@ -849,6 +959,8 @@
   };
 
   let products = [];
+  let previewObjectUrl = "";
+  let imageMarkedForRemoval = false;
 
   const emojiMap = {
     "肉品": "🥩",
@@ -1177,6 +1289,32 @@
       }).join("");
   }
 
+  function clearPreviewObjectUrl() {
+    if (previewObjectUrl) {
+      URL.revokeObjectURL(previewObjectUrl);
+      previewObjectUrl = "";
+    }
+  }
+
+  function hideImagePreview() {
+    clearPreviewObjectUrl();
+    els.imagePreview.removeAttribute("src");
+    els.imagePreviewWrap.classList.add("hidden");
+  }
+
+  function showImagePreview(src) {
+    els.imagePreview.src = src;
+    els.imagePreviewWrap.classList.remove("hidden");
+  }
+
+  function resetImageField() {
+    clearPreviewObjectUrl();
+    els.imageFile.value = "";
+    els.currentImageUrl.value = "";
+    imageMarkedForRemoval = false;
+    hideImagePreview();
+  }
+
   function openAddModal() {
     els.modalTitle.textContent =
       "新增商品";
@@ -1191,12 +1329,16 @@
     els.listingStatus.value =
       "listed";
 
+    resetImageField();
+
     els.productModal.classList.remove(
       "hidden"
     );
   }
 
   function closeModal() {
+    clearPreviewObjectUrl();
+
     els.productModal.classList.add(
       "hidden"
     );
@@ -1237,8 +1379,18 @@
     els.listingStatus.value =
       product.listing_status || "listed";
 
-    els.imageUrl.value =
+    els.imageFile.value = "";
+    els.currentImageUrl.value =
       product.image_url || "";
+
+    imageMarkedForRemoval = false;
+    clearPreviewObjectUrl();
+
+    if (product.image_url) {
+      showImagePreview(product.image_url);
+    } else {
+      hideImagePreview();
+    }
 
     els.description.value =
       product.description || "";
@@ -1247,6 +1399,139 @@
       "hidden"
     );
   };
+
+  function getStoragePathFromPublicUrl(url) {
+    if (!url) return null;
+
+    const marker =
+      `/storage/v1/object/public/${STORAGE_BUCKET}/`;
+
+    const index =
+      url.indexOf(marker);
+
+    if (index === -1) return null;
+
+    return decodeURIComponent(
+      url.slice(index + marker.length)
+    );
+  }
+
+  async function removeStorageImageByUrl(url) {
+    const path =
+      getStoragePathFromPublicUrl(url);
+
+    if (!path) return;
+
+    const {
+      error
+    } = await db.storage
+      .from(STORAGE_BUCKET)
+      .remove([path]);
+
+    if (error) {
+      console.warn(
+        "刪除舊圖片失敗：",
+        error.message
+      );
+    }
+  }
+
+  function makeUploadPath(file) {
+    const originalName =
+      file.name || "image.jpg";
+
+    const extension =
+      (originalName.split(".").pop() || "jpg")
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "") || "jpg";
+
+    const randomPart =
+      (window.crypto?.randomUUID?.() ||
+        Math.random().toString(36).slice(2))
+        .replace(/-/g, "");
+
+    return `products/${Date.now()}-${randomPart}.${extension}`;
+  }
+
+  async function uploadProductImage(file) {
+    if (!file) return null;
+
+    if (!file.type.startsWith("image/")) {
+      throw new Error("請選擇圖片檔案");
+    }
+
+    const path =
+      makeUploadPath(file);
+
+    const {
+      error: uploadError
+    } = await db.storage
+      .from(STORAGE_BUCKET)
+      .upload(path, file, {
+        cacheControl:"3600",
+        upsert:false,
+        contentType:file.type || undefined
+      });
+
+    if (uploadError) {
+      throw uploadError;
+    }
+
+    const {
+      data
+    } = db.storage
+      .from(STORAGE_BUCKET)
+      .getPublicUrl(path);
+
+    if (!data?.publicUrl) {
+      await db.storage
+        .from(STORAGE_BUCKET)
+        .remove([path]);
+
+      throw new Error(
+        "圖片網址建立失敗"
+      );
+    }
+
+    return {
+      path,
+      publicUrl:data.publicUrl
+    };
+  }
+
+  els.imageFile.addEventListener(
+    "change",
+    () => {
+      const file =
+        els.imageFile.files?.[0];
+
+      if (!file) return;
+
+      if (!file.type.startsWith("image/")) {
+        els.imageFile.value = "";
+        toast("請選擇圖片檔案");
+        return;
+      }
+
+      clearPreviewObjectUrl();
+
+      previewObjectUrl =
+        URL.createObjectURL(file);
+
+      showImagePreview(previewObjectUrl);
+
+      imageMarkedForRemoval = false;
+    }
+  );
+
+  els.removeImageBtn.addEventListener(
+    "click",
+    () => {
+      els.imageFile.value = "";
+      imageMarkedForRemoval = true;
+      hideImagePreview();
+    }
+  );
 
   window.deleteProduct =
     async function(id) {
@@ -1280,6 +1565,12 @@
         return;
       }
 
+      if (product.image_url) {
+        await removeStorageImageByUrl(
+          product.image_url
+        );
+      }
+
       toast("商品已刪除");
 
       await loadProducts();
@@ -1297,75 +1588,129 @@
       const id =
         els.productId.value;
 
-      const payload = {
-        name:
-          els.productName.value.trim(),
+      const oldImageUrl =
+        els.currentImageUrl.value.trim();
 
-        category:
-          els.productCategory.value,
+      const selectedFile =
+        els.imageFile.files?.[0] || null;
 
-        price:
-          Number(
-            els.productPrice.value || 0
-          ),
+      let newUpload = null;
+      let finalImageUrl =
+        imageMarkedForRemoval
+          ? null
+          : (oldImageUrl || null);
 
-        spec:
-          els.productSpec.value.trim() || null,
+      try {
+        if (selectedFile) {
+          els.saveProductBtn.textContent =
+            "上傳圖片中...";
 
-        warehouse:
-          els.productWarehouse.value,
+          newUpload =
+            await uploadProductImage(
+              selectedFile
+            );
 
-        stock_status:
-          els.stockStatus.value,
+          finalImageUrl =
+            newUpload.publicUrl;
+        }
 
-        listing_status:
-          els.listingStatus.value,
+        els.saveProductBtn.textContent =
+          "儲存商品中...";
 
-        image_url:
-          els.imageUrl.value.trim() || null,
+        const payload = {
+          name:
+            els.productName.value.trim(),
 
-        description:
-          els.description.value.trim() || null
-      };
+          category:
+            els.productCategory.value,
 
-      let error;
+          price:
+            Number(
+              els.productPrice.value || 0
+            ),
 
-      if (id) {
-        ({
-          error
-        } = await db
-          .from("products")
-          .update(payload)
-          .eq("id", Number(id)));
-      } else {
-        ({
-          error
-        } = await db
-          .from("products")
-          .insert(payload));
-      }
+          spec:
+            els.productSpec.value.trim() || null,
 
-      els.saveProductBtn.disabled = false;
-      els.saveProductBtn.textContent =
-        "儲存商品";
+          warehouse:
+            els.productWarehouse.value,
 
-      if (error) {
+          stock_status:
+            els.stockStatus.value,
+
+          listing_status:
+            els.listingStatus.value,
+
+          image_url:
+            finalImageUrl,
+
+          description:
+            els.description.value.trim() || null
+        };
+
+        let error;
+
+        if (id) {
+          ({
+            error
+          } = await db
+            .from("products")
+            .update(payload)
+            .eq("id", Number(id)));
+        } else {
+          ({
+            error
+          } = await db
+            .from("products")
+            .insert(payload));
+        }
+
+        if (error) {
+          if (newUpload?.path) {
+            await db.storage
+              .from(STORAGE_BUCKET)
+              .remove([newUpload.path]);
+          }
+
+          throw error;
+        }
+
+        const oldImageShouldBeDeleted =
+          oldImageUrl &&
+          (
+            imageMarkedForRemoval ||
+            (
+              newUpload?.publicUrl &&
+              newUpload.publicUrl !== oldImageUrl
+            )
+          );
+
+        if (oldImageShouldBeDeleted) {
+          await removeStorageImageByUrl(
+            oldImageUrl
+          );
+        }
+
+        closeModal();
+
+        toast(
+          id
+            ? "商品修改完成"
+            : "商品新增完成"
+        );
+
+        await loadProducts();
+
+      } catch (error) {
         toast(
           "儲存失敗：" +
-          error.message
+          (error?.message || "未知錯誤")
         );
-        return;
+      } finally {
+        els.saveProductBtn.disabled = false;
+        els.saveProductBtn.textContent =
+          "儲存商品";
       }
-
-      closeModal();
-
-      toast(
-        id
-          ? "商品修改完成"
-          : "商品新增完成"
-      );
-
-      await loadProducts();
     }
   );
 
