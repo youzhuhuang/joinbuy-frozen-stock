@@ -1,5 +1,9 @@
 const cfg = window.JOINBUY_CONFIG;
-const client = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseKey);
+
+const client = window.supabase.createClient(
+  cfg.supabaseUrl,
+  cfg.supabaseKey
+);
 
 const els = {
   search: document.getElementById('searchInput'),
@@ -13,6 +17,7 @@ const els = {
   title: document.getElementById('headingTitle'),
   refresh: document.getElementById('refreshBtn'),
   retry: document.getElementById('retryBtn'),
+
   detailModal: document.getElementById('detailModal'),
   detailCloseBtn: document.getElementById('detailCloseBtn'),
   detailMedia: document.getElementById('detailMedia'),
@@ -22,144 +27,628 @@ const els = {
   detailPrice: document.getElementById('detailPrice'),
   detailSpec: document.getElementById('detailSpec'),
   detailExpiry: document.getElementById('detailExpiry'),
-  detailDescription: document.getElementById('detailDescription')
+  detailDescription: document.getElementById('detailDescription'),
+
+  detailVariants: document.getElementById('detailVariants'),
+  detailVariantList: document.getElementById('detailVariantList')
 };
 
 let allProducts = [];
+let allVariants = [];
 let activeCategory = '全部';
 
 const emojiMap = {
-  '肉品':'🥩','海鮮':'🦐','火鍋料':'🍲','早餐／麵食':'🥞',
-  '點心／甜點':'🍗','其他':'❄️'
+  '肉品':'🥩',
+  '海鮮':'🦐',
+  '火鍋料':'🍲',
+  '早餐／麵食':'🥞',
+  '點心／甜點':'🍗',
+  '其他':'❄️'
 };
 
 function show(which){
-  [els.loading,els.error,els.empty,els.grid].forEach(el=>el.classList.add('hidden'));
+  [
+    els.loading,
+    els.error,
+    els.empty,
+    els.grid
+  ].forEach(el => el.classList.add('hidden'));
+
   which.classList.remove('hidden');
 }
 
 function escapeHtml(v=''){
-  return String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+  return String(v).replace(
+    /[&<>"']/g,
+    c => ({
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;',
+      '"':'&quot;',
+      "'":'&#039;'
+    }[c])
+  );
 }
 
 function formatDate(value){
   if(!value) return '未提供';
+
   const parts = String(value).split('-');
-  return parts.length === 3 ? `${parts[0]}/${parts[1]}/${parts[2]}` : value;
+
+  return parts.length === 3
+    ? `${parts[0]}/${parts[1]}/${parts[2]}`
+    : value;
+}
+
+function getVariantsForProduct(productId){
+  return allVariants.filter(
+    item =>
+      Number(item.product_id) === Number(productId)
+  );
+}
+
+function variantIsSoldOut(variant){
+  return variant.stock_status === '庫存已售完';
+}
+
+function getProductDisplayInfo(product){
+  const variants =
+    getVariantsForProduct(product.id);
+
+  if(!variants.length){
+    return {
+      variants: [],
+      priceText:
+        `$${Number(product.price || 0).toLocaleString()}`,
+      sold:
+        product.stock_status === 'sold_out',
+      imageUrl:
+        product.image_url || ''
+    };
+  }
+
+  const prices = variants
+    .map(item => Number(item.price || 0));
+
+  const minPrice = Math.min(...prices);
+  const maxPrice = Math.max(...prices);
+
+  const priceText =
+    minPrice === maxPrice
+      ? `$${minPrice.toLocaleString()}`
+      : `$${minPrice.toLocaleString()}～$${maxPrice.toLocaleString()}`;
+
+  const sold =
+    variants.every(variantIsSoldOut);
+
+  const imageUrl =
+    variants.find(item => item.image_url)?.image_url ||
+    product.image_url ||
+    '';
+
+  return {
+    variants,
+    priceText,
+    sold,
+    imageUrl
+  };
 }
 
 function renderTabs(){
-  const categories = ['全部', ...Array.from(new Set(allProducts.map(p=>p.category).filter(Boolean)))];
+  const categories = [
+    '全部',
+    ...Array.from(
+      new Set(
+        allProducts
+          .map(p => p.category)
+          .filter(Boolean)
+      )
+    )
+  ];
+
   els.tabs.innerHTML = '';
-  categories.forEach(cat=>{
-    const b=document.createElement('button');
-    b.className='tab'+(cat===activeCategory?' active':'');
-    b.textContent=cat;
-    b.onclick=()=>{activeCategory=cat;renderTabs();renderProducts()};
-    els.tabs.appendChild(b);
+
+  categories.forEach(cat => {
+    const button =
+      document.createElement('button');
+
+    button.className =
+      'tab' +
+      (cat === activeCategory ? ' active' : '');
+
+    button.textContent = cat;
+
+    button.onclick = () => {
+      activeCategory = cat;
+      renderTabs();
+      renderProducts();
+    };
+
+    els.tabs.appendChild(button);
   });
 }
 
 function renderProducts(){
-  const q=els.search.value.trim().toLowerCase();
-  const list=allProducts.filter(p=>{
-    const catOk=activeCategory==='全部'||p.category===activeCategory;
-    const qOk=!q||String(p.name||'').toLowerCase().includes(q)||String(p.spec||'').toLowerCase().includes(q);
-    return catOk&&qOk;
-  });
-  els.title.textContent=activeCategory==='全部'?'全部現貨':activeCategory;
-  els.count.textContent=`共 ${list.length} 項商品`;
+  const q =
+    els.search.value
+      .trim()
+      .toLowerCase();
 
-  if(!list.length){ show(els.empty); return; }
+  const list =
+    allProducts.filter(product => {
 
-  els.grid.innerHTML=list.map(p=>{
-    const image=p.image_url
-      ? `<img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="fallback" style="display:none">${emojiMap[p.category]||'❄️'}</span>`
-      : `<span class="fallback">${emojiMap[p.category]||'❄️'}</span>`;
-    const sold=p.stock_status==='sold_out';
-    return `<article class="card" data-product-id="${p.id}" tabindex="0" role="button" aria-label="查看 ${escapeHtml(p.name||'商品')} 詳細資訊">
-      <div class="media">${image}</div>
-      <div class="body">
-        <div class="category">${escapeHtml(p.category||'')}</div>
-        <h4 class="name">${escapeHtml(p.name||'未命名商品')}</h4>
-        <p class="spec">${escapeHtml(p.spec||'')}</p>
-        <div class="bottom">
-          <div class="price">$${Number(p.price||0).toLocaleString()}</div>
-          <span class="badge ${sold?'out':'in'}">${sold?'庫存已售完':'尚有庫存'}</span>
-        </div>
-        <div class="card-hint">點一下查看商品資訊</div>
-      </div>
-    </article>`;
-  }).join('');
+      const variants =
+        getVariantsForProduct(product.id);
 
-  els.grid.querySelectorAll('.card').forEach(card=>{
-    const open=()=>openProductDetail(Number(card.dataset.productId));
-    card.addEventListener('click',open);
-    card.addEventListener('keydown',e=>{
-      if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}
+      const catOk =
+        activeCategory === '全部' ||
+        product.category === activeCategory;
+
+      const searchProduct =
+        String(product.name || '')
+          .toLowerCase()
+          .includes(q) ||
+        String(product.spec || '')
+          .toLowerCase()
+          .includes(q);
+
+      const searchVariant =
+        variants.some(item =>
+          String(item.variant_name || '')
+            .toLowerCase()
+            .includes(q)
+        );
+
+      const qOk =
+        !q ||
+        searchProduct ||
+        searchVariant;
+
+      return catOk && qOk;
     });
-  });
+
+  els.title.textContent =
+    activeCategory === '全部'
+      ? '全部現貨'
+      : activeCategory;
+
+  els.count.textContent =
+    `共 ${list.length} 項商品`;
+
+  if(!list.length){
+    show(els.empty);
+    return;
+  }
+
+  els.grid.innerHTML =
+    list.map(product => {
+
+      const display =
+        getProductDisplayInfo(product);
+
+      const image =
+        display.imageUrl
+          ? `
+            <img
+              src="${escapeHtml(display.imageUrl)}"
+              alt="${escapeHtml(product.name)}"
+              loading="lazy"
+              onerror="this.style.display='none';this.nextElementSibling.style.display='block'"
+            >
+            <span
+              class="fallback"
+              style="display:none"
+            >
+              ${emojiMap[product.category] || '❄️'}
+            </span>
+          `
+          : `
+            <span class="fallback">
+              ${emojiMap[product.category] || '❄️'}
+            </span>
+          `;
+
+      const variantHint =
+        display.variants.length
+          ? `
+            <div class="card-variant-hint">
+              ${display.variants.length} 種口味／規格
+            </div>
+          `
+          : '';
+
+      const stockText =
+        display.sold
+          ? '庫存已售完'
+          : (
+              display.variants.length
+                ? '有口味現貨'
+                : '尚有庫存'
+            );
+
+      return `
+        <article
+          class="card"
+          data-product-id="${product.id}"
+          tabindex="0"
+          role="button"
+          aria-label="查看 ${escapeHtml(product.name || '商品')} 詳細資訊"
+        >
+
+          <div class="media">
+            ${image}
+          </div>
+
+          <div class="body">
+
+            <div class="category">
+              ${escapeHtml(product.category || '')}
+            </div>
+
+            <h4 class="name">
+              ${escapeHtml(product.name || '未命名商品')}
+            </h4>
+
+            <p class="spec">
+              ${escapeHtml(product.spec || '')}
+            </p>
+
+            ${variantHint}
+
+            <div class="bottom">
+
+              <div class="price">
+                ${display.priceText}
+              </div>
+
+              <span
+                class="badge ${display.sold ? 'out' : 'in'}"
+              >
+                ${stockText}
+              </span>
+
+            </div>
+
+            <div class="card-hint">
+              點一下查看商品資訊
+            </div>
+
+          </div>
+        </article>
+      `;
+    }).join('');
+
+  els.grid
+    .querySelectorAll('.card')
+    .forEach(card => {
+
+      const open = () =>
+        openProductDetail(
+          Number(card.dataset.productId)
+        );
+
+      card.addEventListener(
+        'click',
+        open
+      );
+
+      card.addEventListener(
+        'keydown',
+        event => {
+
+          if(
+            event.key === 'Enter' ||
+            event.key === ' '
+          ){
+            event.preventDefault();
+            open();
+          }
+
+        }
+      );
+    });
 
   show(els.grid);
 }
 
+function renderVariantDetail(variants){
+  if(!variants.length){
+    els.detailVariants.classList.add('hidden');
+    els.detailVariantList.innerHTML = '';
+    return;
+  }
+
+  els.detailVariants.classList.remove('hidden');
+
+  els.detailVariantList.innerHTML =
+    variants.map(item => {
+
+      const sold =
+        variantIsSoldOut(item);
+
+      const image =
+        item.image_url
+          ? `
+            <img
+              class="detail-variant-image"
+              src="${escapeHtml(item.image_url)}"
+              alt="${escapeHtml(item.variant_name || '口味圖片')}"
+            >
+          `
+          : `
+            <div class="detail-variant-image-fallback">
+              ❄️
+            </div>
+          `;
+
+      return `
+        <div class="detail-variant-card">
+
+          ${image}
+
+          <div class="detail-variant-body">
+
+            <div class="detail-variant-head">
+
+              <strong class="detail-variant-name">
+                ${escapeHtml(item.variant_name || '未命名')}
+              </strong>
+
+              <span
+                class="detail-variant-stock ${sold ? 'out' : 'in'}"
+              >
+                ${sold ? '庫存已售完' : '尚有庫存'}
+              </span>
+
+            </div>
+
+            <div class="detail-variant-price">
+              $${Number(item.price || 0).toLocaleString()}
+            </div>
+
+            <div class="detail-variant-expiry">
+              商品效期：
+              ${formatDate(item.expiry_date)}
+            </div>
+
+          </div>
+
+        </div>
+      `;
+    }).join('');
+}
+
 function openProductDetail(id){
-  const p=allProducts.find(item=>Number(item.id)===Number(id));
-  if(!p) return;
+  const product =
+    allProducts.find(
+      item =>
+        Number(item.id) === Number(id)
+    );
 
-  els.detailMedia.innerHTML=p.image_url
-    ? `<img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name||'商品圖片')}">`
-    : `<span class="fallback">${emojiMap[p.category]||'❄️'}</span>`;
+  if(!product) return;
 
-  els.detailCategory.textContent=p.category||'其他';
-  els.detailName.textContent=p.name||'未命名商品';
-  els.detailPrice.textContent=`$${Number(p.price||0).toLocaleString()}`;
-  els.detailSpec.textContent=p.spec||'未提供';
-  els.detailExpiry.textContent=formatDate(p.expiry_date);
-  els.detailDescription.textContent=p.description||'目前沒有其他商品介紹。';
+  const display =
+    getProductDisplayInfo(product);
 
-  const sold=p.stock_status==='sold_out';
-  els.detailStock.textContent=sold?'庫存已售完':'尚有庫存';
-  els.detailStock.className=`detail-stock ${sold?'out':'in'}`;
+  els.detailMedia.innerHTML =
+    display.imageUrl
+      ? `
+        <img
+          src="${escapeHtml(display.imageUrl)}"
+          alt="${escapeHtml(product.name || '商品圖片')}"
+        >
+      `
+      : `
+        <span class="fallback">
+          ${emojiMap[product.category] || '❄️'}
+        </span>
+      `;
 
-  els.detailModal.classList.remove('hidden');
-  els.detailModal.setAttribute('aria-hidden','false');
-  document.body.classList.add('modal-open');
+  els.detailCategory.textContent =
+    product.category || '其他';
+
+  els.detailName.textContent =
+    product.name || '未命名商品';
+
+  els.detailPrice.textContent =
+    display.priceText;
+
+  els.detailSpec.textContent =
+    product.spec || '未提供';
+
+  els.detailExpiry.textContent =
+    display.variants.length
+      ? '依口味／規格不同'
+      : formatDate(product.expiry_date);
+
+  els.detailDescription.textContent =
+    product.description ||
+    '目前沒有其他商品介紹。';
+
+  els.detailStock.textContent =
+    display.sold
+      ? '庫存已售完'
+      : (
+          display.variants.length
+            ? '有口味現貨'
+            : '尚有庫存'
+        );
+
+  els.detailStock.className =
+    `detail-stock ${display.sold ? 'out' : 'in'}`;
+
+  renderVariantDetail(
+    display.variants
+  );
+
+  els.detailModal
+    .classList
+    .remove('hidden');
+
+  els.detailModal
+    .setAttribute(
+      'aria-hidden',
+      'false'
+    );
+
+  document.body
+    .classList
+    .add('modal-open');
 }
 
 function closeProductDetail(){
-  els.detailModal.classList.add('hidden');
-  els.detailModal.setAttribute('aria-hidden','true');
-  document.body.classList.remove('modal-open');
+  els.detailModal
+    .classList
+    .add('hidden');
+
+  els.detailModal
+    .setAttribute(
+      'aria-hidden',
+      'true'
+    );
+
+  document.body
+    .classList
+    .remove('modal-open');
 }
 
 async function loadProducts(){
   show(els.loading);
-  els.count.textContent='讀取商品中...';
-  const { data, error } = await client
-    .from('products')
-    .select('id,name,category,price,spec,stock_status,listing_status,image_url,description,expiry_date,created_at')
-    .eq('listing_status','listed')
-    .order('created_at',{ascending:false});
 
-  if(error){
-    els.errorText.textContent='連線失敗：'+error.message;
-    els.count.textContent='讀取失敗';
+  els.count.textContent =
+    '讀取商品中...';
+
+  const [
+    productResult,
+    variantResult
+  ] = await Promise.all([
+
+    client
+      .from('products')
+      .select(
+        'id,name,category,price,spec,stock_status,listing_status,image_url,description,expiry_date,created_at'
+      )
+      .eq(
+        'listing_status',
+        'listed'
+      )
+      .order(
+        'created_at',
+        { ascending:false }
+      ),
+
+    client
+      .from('product_variants')
+      .select(
+        'id,product_id,variant_name,price,expiry_date,warehouse,image_url,stock_status,listing_status,sort_order'
+      )
+      .eq(
+        'listing_status',
+        '上架'
+      )
+      .order(
+        'sort_order',
+        { ascending:true }
+      )
+      .order(
+        'id',
+        { ascending:true }
+      )
+
+  ]);
+
+  if(productResult.error){
+
+    els.errorText.textContent =
+      '商品連線失敗：' +
+      productResult.error.message;
+
+    els.count.textContent =
+      '讀取失敗';
+
     show(els.error);
+
     return;
   }
 
-  allProducts=data||[];
-  if(!allProducts.some(p=>p.category===activeCategory)) activeCategory='全部';
+  if(variantResult.error){
+
+    els.errorText.textContent =
+      '口味／規格連線失敗：' +
+      variantResult.error.message;
+
+    els.count.textContent =
+      '讀取失敗';
+
+    show(els.error);
+
+    return;
+  }
+
+  allProducts =
+    productResult.data || [];
+
+  allVariants =
+    variantResult.data || [];
+
+  if(
+    !allProducts.some(
+      product =>
+        product.category === activeCategory
+    )
+  ){
+    activeCategory = '全部';
+  }
+
   renderTabs();
   renderProducts();
 }
 
-els.search.addEventListener('input',renderProducts);
-els.refresh.addEventListener('click',loadProducts);
-els.retry.addEventListener('click',loadProducts);
-els.detailCloseBtn.addEventListener('click',closeProductDetail);
-els.detailModal.addEventListener('click',e=>{if(e.target===els.detailModal) closeProductDetail();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!els.detailModal.classList.contains('hidden')) closeProductDetail();});
+els.search.addEventListener(
+  'input',
+  renderProducts
+);
+
+els.refresh.addEventListener(
+  'click',
+  loadProducts
+);
+
+els.retry.addEventListener(
+  'click',
+  loadProducts
+);
+
+els.detailCloseBtn.addEventListener(
+  'click',
+  closeProductDetail
+);
+
+els.detailModal.addEventListener(
+  'click',
+  event => {
+
+    if(
+      event.target === els.detailModal
+    ){
+      closeProductDetail();
+    }
+
+  }
+);
+
+document.addEventListener(
+  'keydown',
+  event => {
+
+    if(
+      event.key === 'Escape' &&
+      !els.detailModal.classList.contains('hidden')
+    ){
+      closeProductDetail();
+    }
+
+  }
+);
 
 loadProducts();
