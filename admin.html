@@ -1028,6 +1028,7 @@
   };
 
   let products = [];
+  let categories = [];
   let previewObjectUrl = "";
   let imageMarkedForRemoval = false;
 
@@ -1080,7 +1081,7 @@
         ? "登入帳號：" + user.email
         : "管理員";
 
-    loadProducts();
+    loadAllData();
   }
 
   async function checkSession() {
@@ -1138,6 +1139,7 @@
       await db.auth.signOut();
 
       products = [];
+      categories = [];
       els.productBody.innerHTML = "";
 
       showLogin();
@@ -1146,29 +1148,44 @@
     }
   );
 
-  async function loadProducts() {
+  async function loadAllData() {
     els.loadingState.classList.remove("hidden");
     els.emptyState.classList.add("hidden");
     els.tableWrap.classList.add("hidden");
 
-    const {
-      data,
-      error
-    } = await db
-      .from("products")
-      .select("*")
-      .order("created_at", {
-        ascending:false
-      });
+    const [categoryResult, productResult] = await Promise.all([
+      db
+        .from("categories")
+        .select("id,name,sort_order,created_at")
+        .order("sort_order", { ascending:true })
+        .order("id", { ascending:true }),
+      db
+        .from("products")
+        .select("*")
+        .order("created_at", { ascending:false })
+    ]);
 
     els.loadingState.classList.add("hidden");
 
-    if (error) {
-      toast("讀取商品失敗：" + error.message);
+    if (categoryResult.error) {
+      toast("讀取分類失敗：" + categoryResult.error.message);
       return;
     }
 
-    products = data || [];
+    if (productResult.error) {
+      toast("讀取商品失敗：" + productResult.error.message);
+      return;
+    }
+
+    categories = (categoryResult.data || [])
+      .filter(item => String(item.name || "").trim())
+      .map(item => ({
+        ...item,
+        name:String(item.name).trim(),
+        sort_order:Number(item.sort_order || 0)
+      }));
+
+    products = productResult.data || [];
 
     renderCategoryManager();
     buildCategoryFilter();
@@ -1177,41 +1194,52 @@
     renderProducts();
   }
 
-  const defaultCategories = [
-    "肉品", "海鮮", "火鍋料", "早餐／麵食", "點心／甜點", "其他"
-  ];
-
-  const CATEGORY_STORAGE_KEY = "joinbuy_custom_categories_v1";
-
-  function getSavedCategories() {
-    try {
-      const value = JSON.parse(localStorage.getItem(CATEGORY_STORAGE_KEY) || "[]");
-      return Array.isArray(value) ? value.filter(Boolean) : [];
-    } catch { return []; }
-  }
-
-  function saveCategories(categories) {
-    localStorage.setItem(CATEGORY_STORAGE_KEY, JSON.stringify([...new Set(categories.filter(Boolean))]));
+  async function loadProducts() {
+    return loadAllData();
   }
 
   function getAllCategories() {
-    const hidden = JSON.parse(localStorage.getItem("joinbuy_hidden_categories_v1") || "[]");
-    return [...new Set([
-      ...defaultCategories.filter(c => !hidden.includes(c)),
-      ...getSavedCategories(),
-      ...products.map(p => p.category).filter(Boolean)
-    ])];
+    const names = [];
+
+    categories.forEach(item => {
+      if (item.name && !names.includes(item.name)) names.push(item.name);
+    });
+
+    products.forEach(product => {
+      const name = String(product.category || "").trim();
+      if (name && !names.includes(name)) names.push(name);
+    });
+
+    return names;
+  }
+
+  function findCategoryRecord(name) {
+    return categories.find(item => item.name === name) || null;
   }
 
   function renderCategoryManager() {
-    const categories = getAllCategories();
-    els.categoryList.innerHTML = categories.map(category => `
-      <div class="category-chip">
-        <span class="category-chip-name">${escapeHtml(category)}</span>
-        <button type="button" onclick='renameCategory(${JSON.stringify(category)})'>修改</button>
-        <button type="button" class="cat-delete" onclick='deleteCategory(${JSON.stringify(category)})'>刪除</button>
-      </div>
-    `).join("");
+    const names = getAllCategories();
+
+    if (!names.length) {
+      els.categoryList.innerHTML = '<span style="color:var(--muted);font-size:12px">目前尚未建立分類</span>';
+      return;
+    }
+
+    els.categoryList.innerHTML = names.map((name, index) => {
+      const record = findCategoryRecord(name);
+      const canMoveUp = !!record && index > 0;
+      const canMoveDown = !!record && index < categories.length - 1;
+
+      return `
+        <div class="category-chip">
+          <span class="category-chip-name">${escapeHtml(name)}</span>
+          ${record ? `<button type="button" title="往前" ${canMoveUp ? "" : "disabled"} onclick='moveCategory(${record.id},-1)'>↑</button>` : ""}
+          ${record ? `<button type="button" title="往後" ${canMoveDown ? "" : "disabled"} onclick='moveCategory(${record.id},1)'>↓</button>` : ""}
+          <button type="button" onclick='renameCategory(${JSON.stringify(name)})'>修改</button>
+          <button type="button" class="cat-delete" onclick='deleteCategory(${JSON.stringify(name)})'>刪除</button>
+        </div>
+      `;
+    }).join("");
   }
 
   function refreshCategoryUI() {
@@ -1221,54 +1249,156 @@
     renderProducts();
   }
 
-  function addCategory() {
+  async function addCategory() {
     const name = (prompt("請輸入新的分類名稱：") || "").trim();
     if (!name) return;
-    if (getAllCategories().includes(name)) { toast("這個分類已經存在"); return; }
-    saveCategories([...getSavedCategories(), name]);
-    refreshCategoryUI();
+
+    if (getAllCategories().includes(name)) {
+      toast("這個分類已經存在");
+      return;
+    }
+
+    const nextOrder = categories.length
+      ? Math.max(...categories.map(item => Number(item.sort_order || 0))) + 1
+      : 1;
+
+    const { error } = await db
+      .from("categories")
+      .insert({ name, sort_order:nextOrder });
+
+    if (error) {
+      toast("新增分類失敗：" + error.message);
+      return;
+    }
+
     toast(`已新增分類「${name}」`);
+    await loadAllData();
   }
 
   window.renameCategory = async function(oldName) {
-    const newName = (prompt(`修改分類名稱：`, oldName) || "").trim();
+    const newName = (prompt("修改分類名稱：", oldName) || "").trim();
     if (!newName || newName === oldName) return;
-    if (getAllCategories().includes(newName)) { toast("這個分類名稱已經存在"); return; }
+
+    if (getAllCategories().includes(newName)) {
+      toast("這個分類名稱已經存在");
+      return;
+    }
+
     const affected = products.filter(p => p.category === oldName).length;
     if (affected && !confirm(`目前有 ${affected} 項商品使用「${oldName}」。\n\n修改後，這些商品會一起改成「${newName}」。確定嗎？`)) return;
-    if (affected) {
-      const { error } = await db.from("products").update({category:newName}).eq("category", oldName);
-      if (error) { toast("修改分類失敗：" + error.message); return; }
+
+    const record = findCategoryRecord(oldName);
+
+    if (record) {
+      const { error } = await db
+        .from("categories")
+        .update({ name:newName })
+        .eq("id", record.id);
+
+      if (error) {
+        toast("修改分類失敗：" + error.message);
+        return;
+      }
+    } else {
+      const nextOrder = categories.length
+        ? Math.max(...categories.map(item => Number(item.sort_order || 0))) + 1
+        : 1;
+
+      const { error } = await db
+        .from("categories")
+        .insert({ name:newName, sort_order:nextOrder });
+
+      if (error) {
+        toast("建立分類失敗：" + error.message);
+        return;
+      }
     }
-    let saved = getSavedCategories().filter(c => c !== oldName);
-    saved.push(newName);
-    saveCategories(saved);
+
+    if (affected) {
+      const { error } = await db
+        .from("products")
+        .update({ category:newName })
+        .eq("category", oldName);
+
+      if (error) {
+        toast("商品分類同步失敗：" + error.message);
+        return;
+      }
+    }
+
     toast("分類修改完成");
-    await loadProducts();
+    await loadAllData();
   };
 
   window.deleteCategory = async function(name) {
     const affected = products.filter(p => p.category === name).length;
+
     if (affected) {
       alert(`「${name}」目前還有 ${affected} 項商品使用中。\n\n請先把這些商品改到其他分類，再刪除這個分類。`);
       return;
     }
+
     if (!confirm(`確定要刪除分類「${name}」嗎？`)) return;
-    saveCategories(getSavedCategories().filter(c => c !== name));
-    // 預設分類若刪除，在本機記錄隱藏
-    const hidden = JSON.parse(localStorage.getItem("joinbuy_hidden_categories_v1") || "[]");
-    if (defaultCategories.includes(name)) localStorage.setItem("joinbuy_hidden_categories_v1", JSON.stringify([...new Set([...hidden,name])]));
-    refreshCategoryUI();
+
+    const record = findCategoryRecord(name);
+
+    if (!record) {
+      toast("這個分類目前只存在於舊商品資料，沒有可刪除的分類記錄");
+      return;
+    }
+
+    const { error } = await db
+      .from("categories")
+      .delete()
+      .eq("id", record.id);
+
+    if (error) {
+      toast("刪除分類失敗：" + error.message);
+      return;
+    }
+
     toast("分類已刪除");
+    await loadAllData();
+  };
+
+  window.moveCategory = async function(id, direction) {
+    const currentIndex = categories.findIndex(item => item.id === id);
+    if (currentIndex < 0) return;
+
+    const targetIndex = currentIndex + direction;
+    if (targetIndex < 0 || targetIndex >= categories.length) return;
+
+    const current = categories[currentIndex];
+    const target = categories[targetIndex];
+
+    let currentOrder = Number(current.sort_order || currentIndex + 1);
+    let targetOrder = Number(target.sort_order || targetIndex + 1);
+
+    if (currentOrder === targetOrder) {
+      currentOrder = currentIndex + 1;
+      targetOrder = targetIndex + 1;
+    }
+
+    const [a, b] = await Promise.all([
+      db.from("categories").update({ sort_order:targetOrder }).eq("id", current.id),
+      db.from("categories").update({ sort_order:currentOrder }).eq("id", target.id)
+    ]);
+
+    if (a.error || b.error) {
+      toast("調整分類順序失敗：" + (a.error?.message || b.error?.message || "未知錯誤"));
+      return;
+    }
+
+    await loadAllData();
   };
 
   function buildProductCategoryOptions(selected = "") {
-    const categories = getAllCategories();
+    const names = getAllCategories();
 
     els.productCategory.innerHTML =
       '<option value="">請選擇</option>';
 
-    categories.forEach(category => {
+    names.forEach(category => {
       const option = document.createElement("option");
       option.value = category;
       option.textContent = category;
@@ -1280,7 +1410,7 @@
     addOption.textContent = "＋ 新增分類";
     els.productCategory.appendChild(addOption);
 
-    if (selected && categories.includes(selected)) {
+    if (selected && names.includes(selected)) {
       els.productCategory.value = selected;
     }
   }
@@ -1298,30 +1428,20 @@
   }
 
   function buildCategoryFilter() {
-    const current =
-      els.categoryFilter.value;
-
-    const categories =
-      [...new Set(
-        products
-          .map(p => p.category)
-          .filter(Boolean)
-      )];
+    const current = els.categoryFilter.value;
+    const names = getAllCategories();
 
     els.categoryFilter.innerHTML =
       '<option value="">全部分類</option>';
 
-    categories.forEach(category => {
-      const option =
-        document.createElement("option");
-
+    names.forEach(category => {
+      const option = document.createElement("option");
       option.value = category;
       option.textContent = category;
-
       els.categoryFilter.appendChild(option);
     });
 
-    if (categories.includes(current)) {
+    if (names.includes(current)) {
       els.categoryFilter.value = current;
     }
   }
@@ -1863,6 +1983,22 @@
 
         if (!selectedCategory) {
           throw new Error("請選擇或輸入商品分類");
+        }
+
+        if (els.productCategory.value === "__new__") {
+          if (getAllCategories().includes(selectedCategory)) {
+            throw new Error("這個分類已經存在，請直接從分類選單選擇");
+          }
+
+          const nextOrder = categories.length
+            ? Math.max(...categories.map(item => Number(item.sort_order || 0))) + 1
+            : 1;
+
+          const { error: categoryError } = await db
+            .from("categories")
+            .insert({ name:selectedCategory, sort_order:nextOrder });
+
+          if (categoryError) throw categoryError;
         }
 
         const payload = {
