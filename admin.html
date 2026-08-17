@@ -1137,6 +1137,26 @@
 
   let products = [];
   let categories = [];
+  const DEFAULT_CATEGORIES = ["肉品","海鮮","火鍋料","早餐／麵食","點心／甜點","其他"];
+  const LOCAL_CATEGORY_KEY = "joinbuy_frozen_categories_v1";
+  let categoryDbAvailable = true;
+
+  function getLocalCategoryNames() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(LOCAL_CATEGORY_KEY) || "[]");
+      return Array.isArray(saved) ? saved.map(v => String(v || "").trim()).filter(Boolean) : [];
+    } catch (_) { return []; }
+  }
+
+  function saveLocalCategoryNames(names) {
+    const clean = [...new Set((names || []).map(v => String(v || "").trim()).filter(Boolean))];
+    localStorage.setItem(LOCAL_CATEGORY_KEY, JSON.stringify(clean));
+  }
+
+  function makeLocalCategoryRecords(names) {
+    return names.map((name, index) => ({ id: -(index + 1), name, sort_order:index + 1, _local:true }));
+  }
+
   let previewObjectUrl = "";
   let imageMarkedForRemoval = false;
 
@@ -1292,10 +1312,7 @@
 
     els.loadingState.classList.add("hidden");
 
-    if (categoryResult.error) {
-      toast("讀取分類失敗：" + categoryResult.error.message);
-      return;
-    }
+    categoryDbAvailable = !categoryResult.error;
 
     if (productResult.error) {
       toast("讀取商品失敗：" + productResult.error.message);
@@ -1307,15 +1324,20 @@
       return;
     }
 
-    categories = (categoryResult.data || [])
-      .filter(item => String(item.name || "").trim())
-      .map(item => ({
-        ...item,
-        name:String(item.name).trim(),
-        sort_order:Number(item.sort_order || 0)
-      }));
-
     products = productResult.data || [];
+
+    const dbCategories = categoryDbAvailable
+      ? (categoryResult.data || []).filter(item => String(item.name || "").trim()).map(item => ({
+          ...item,
+          name:String(item.name).trim(),
+          sort_order:Number(item.sort_order || 0)
+        }))
+      : [];
+
+    const productCategoryNames = products.map(p => String(p.category || "").trim()).filter(Boolean);
+    const fallbackNames = [...new Set([...DEFAULT_CATEGORIES, ...getLocalCategoryNames(), ...productCategoryNames])];
+    categories = dbCategories.length ? dbCategories : makeLocalCategoryRecords(fallbackNames);
+    saveLocalCategoryNames(getAllCategories());
     productVariants = variantResult.data || [];
 
     renderCategoryManager();
@@ -1393,17 +1415,22 @@
       ? Math.max(...categories.map(item => Number(item.sort_order || 0))) + 1
       : 1;
 
-    const { error } = await db
-      .from("categories")
-      .insert({ name, sort_order:nextOrder });
-
-    if (error) {
-      toast("新增分類失敗：" + error.message);
-      return;
+    if (categoryDbAvailable) {
+      const { error } = await db.from("categories").insert({ name, sort_order:nextOrder });
+      if (!error) {
+        toast(`已新增分類「${name}」`);
+        await loadAllData();
+        return;
+      }
+      categoryDbAvailable = false;
     }
 
+    const names = getAllCategories();
+    names.push(name);
+    saveLocalCategoryNames(names);
+    categories = makeLocalCategoryRecords([...new Set(names)]);
+    refreshCategoryUI();
     toast(`已新增分類「${name}」`);
-    await loadAllData();
   }
 
   window.renameCategory = async function(oldName) {
@@ -1420,7 +1447,7 @@
 
     const record = findCategoryRecord(oldName);
 
-    if (record) {
+    if (record && !record._local && categoryDbAvailable) {
       const { error } = await db
         .from("categories")
         .update({ name:newName })
@@ -1430,7 +1457,7 @@
         toast("修改分類失敗：" + error.message);
         return;
       }
-    } else {
+    } else if (categoryDbAvailable) {
       const nextOrder = categories.length
         ? Math.max(...categories.map(item => Number(item.sort_order || 0))) + 1
         : 1;
@@ -1457,6 +1484,15 @@
       }
     }
 
+    if (!categoryDbAvailable || record?._local) {
+      const names = getAllCategories().map(n => n === oldName ? newName : n);
+      saveLocalCategoryNames(names);
+      categories = makeLocalCategoryRecords([...new Set(names)]);
+      toast("分類修改完成");
+      refreshCategoryUI();
+      return;
+    }
+
     toast("分類修改完成");
     await loadAllData();
   };
@@ -1475,6 +1511,15 @@
 
     if (!record) {
       toast("這個分類目前只存在於舊商品資料，沒有可刪除的分類記錄");
+      return;
+    }
+
+    if (record._local || !categoryDbAvailable) {
+      const names = getAllCategories().filter(n => n !== name);
+      saveLocalCategoryNames(names);
+      categories = makeLocalCategoryRecords(names);
+      toast("分類已刪除");
+      refreshCategoryUI();
       return;
     }
 
@@ -1508,6 +1553,15 @@
     if (currentOrder === targetOrder) {
       currentOrder = currentIndex + 1;
       targetOrder = targetIndex + 1;
+    }
+
+    if (current._local || target._local || !categoryDbAvailable) {
+      const names = categories.map(item => item.name);
+      [names[currentIndex], names[targetIndex]] = [names[targetIndex], names[currentIndex]];
+      saveLocalCategoryNames(names);
+      categories = makeLocalCategoryRecords(names);
+      refreshCategoryUI();
+      return;
     }
 
     const [a, b] = await Promise.all([
