@@ -76,3 +76,127 @@ footer{text-align:center;padding:22px 12px 34px;color:#8f7d6f;font-size:11px}
 .detail-note{margin:17px 0 0;padding-top:12px;border-top:1px dashed var(--line);color:var(--muted);font-size:10px;text-align:center}
 body.modal-open{overflow:hidden}
 @media(min-width:760px){.card:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(76,47,24,.12)}.detail-media{height:340px}}
+/* 客人端：口味／規格 */
+
+.card-variant-hint{
+  display:inline-block;
+  margin-top:6px;
+  padding:4px 7px;
+  border-radius:7px;
+  background:#f6eee5;
+  color:#765034;
+  font-size:10px;
+  font-weight:800;
+}
+
+.detail-variants{
+  margin-top:18px;
+  padding-top:16px;
+  border-top:1px solid #e7d8c5;
+}
+
+.detail-variants h3{
+  margin:0 0 10px;
+  color:#4d2f18;
+  font-size:15px;
+}
+
+.detail-variant-list{
+  display:grid;
+  gap:10px;
+}
+
+.detail-variant-card{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  padding:11px;
+  border:1px solid #e7d8c5;
+  border-radius:14px;
+  background:#fbf6ef;
+}
+
+.detail-variant-image,
+.detail-variant-image-fallback{
+  width:70px;
+  height:70px;
+  border-radius:11px;
+  flex:none;
+}
+
+.detail-variant-image{
+  object-fit:cover;
+  background:#efe4d5;
+}
+
+.detail-variant-image-fallback{
+  display:grid;
+  place-items:center;
+  background:#efe4d5;
+  font-size:26px;
+}
+
+.detail-variant-body{
+  flex:1;
+  min-width:0;
+}
+
+.detail-variant-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:8px;
+}
+
+.detail-variant-name{
+  color:#292019;
+  font-size:14px;
+}
+
+.detail-variant-stock{
+  flex:none;
+  padding:4px 7px;
+  border-radius:7px;
+  font-size:10px;
+  font-weight:800;
+}
+
+.detail-variant-stock.in{
+  color:#5e8b45;
+  background:#e8f2df;
+}
+
+.detail-variant-stock.out{
+  color:#c86c29;
+  background:#fff0df;
+}
+
+.detail-variant-price{
+  margin-top:5px;
+  color:#a94f24;
+  font-size:16px;
+  font-weight:900;
+}
+
+.detail-variant-expiry{
+  margin-top:5px;
+  color:#817367;
+  font-size:11px;
+}
+
+@media(max-width:480px){
+  .detail-variant-image,
+  .detail-variant-image-fallback{
+    width:62px;
+    height:62px;
+  }
+
+  .detail-variant-head{
+    display:block;
+  }
+
+  .detail-variant-stock{
+    display:inline-block;
+    margin-top:5px;
+  }
+}
