@@ -1334,10 +1334,43 @@
         }))
       : [];
 
-    const productCategoryNames = products.map(p => String(p.category || "").trim()).filter(Boolean);
-    const fallbackNames = [...new Set([...DEFAULT_CATEGORIES, ...getLocalCategoryNames(), ...productCategoryNames])];
-    categories = dbCategories.length ? dbCategories : makeLocalCategoryRecords(fallbackNames);
-    saveLocalCategoryNames(getAllCategories());
+    const productCategoryNames = products
+      .map(p => String(p.category || "").trim())
+      .filter(Boolean);
+
+    if (categoryDbAvailable) {
+      // Supabase categories 可正常讀取時，以資料庫為主。
+      // 另外把舊商品仍在使用、但 categories 表沒有的分類補進畫面，避免分類消失。
+      const dbNames = dbCategories.map(item => item.name);
+      const missingProductNames = productCategoryNames.filter(name => !dbNames.includes(name));
+      categories = [
+        ...dbCategories,
+        ...makeLocalCategoryRecords(missingProductNames).map((item, index) => ({
+          ...item,
+          id: -(dbCategories.length + index + 1)
+        }))
+      ];
+
+      // 如果資料庫真的完全沒有分類、商品也沒有舊分類，才提供預設分類。
+      if (!categories.length) {
+        categories = makeLocalCategoryRecords(DEFAULT_CATEGORIES);
+      }
+    } else {
+      // categories 表暫時無法讀取時，才使用瀏覽器本機備援。
+      const fallbackNames = [...new Set([
+        ...getLocalCategoryNames(),
+        ...productCategoryNames
+      ])];
+
+      categories = makeLocalCategoryRecords(
+        fallbackNames.length ? fallbackNames : DEFAULT_CATEGORIES
+      );
+    }
+
+    if (!categoryDbAvailable) {
+      saveLocalCategoryNames(getAllCategories());
+    }
+
     productVariants = variantResult.data || [];
 
     renderCategoryManager();
@@ -2356,11 +2389,20 @@
             ? Math.max(...categories.map(item => Number(item.sort_order || 0))) + 1
             : 1;
 
-          const { error: categoryError } = await db
-            .from("categories")
-            .insert({ name:selectedCategory, sort_order:nextOrder });
+          if (categoryDbAvailable) {
+            const { error: categoryError } = await db
+              .from("categories")
+              .insert({ name:selectedCategory, sort_order:nextOrder });
 
-          if (categoryError) throw categoryError;
+            if (categoryError) {
+              categoryDbAvailable = false;
+              const localNames = [...getAllCategories(), selectedCategory];
+              saveLocalCategoryNames(localNames);
+            }
+          } else {
+            const localNames = [...getAllCategories(), selectedCategory];
+            saveLocalCategoryNames(localNames);
+          }
         }
 
         const preparedVariants = [];
