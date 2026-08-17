@@ -31,7 +31,7 @@
     <section class="controls">
       <label class="search">
         <span>⌕</span>
-        <input id="searchInput" type="search" placeholder="搜尋商品名稱">
+        <input id="searchInput" type="search" placeholder="搜尋商品名稱或口味">
       </label>
       <div class="tabs" id="tabs"></div>
     </section>
@@ -69,35 +69,69 @@
 
   <div id="detailModal" class="detail-backdrop hidden" aria-hidden="true">
     <article class="detail-modal" role="dialog" aria-modal="true" aria-labelledby="detailName">
-      <button id="detailCloseBtn" class="detail-close" type="button" aria-label="關閉">×</button>
+
+      <button
+        id="detailCloseBtn"
+        class="detail-close"
+        type="button"
+        aria-label="關閉"
+      >
+        ×
+      </button>
+
       <div id="detailMedia" class="detail-media"></div>
+
       <div class="detail-content">
+
         <div class="detail-topline">
           <span id="detailCategory" class="detail-category"></span>
           <span id="detailStock" class="detail-stock"></span>
         </div>
+
         <h2 id="detailName" class="detail-name"></h2>
+
         <div id="detailPrice" class="detail-price"></div>
+
         <div class="detail-info">
-          <div class="detail-row"><span>規格</span><strong id="detailSpec"></strong></div>
-          <div class="detail-row"><span>商品效期</span><strong id="detailExpiry"></strong></div>
+          <div class="detail-row">
+            <span>規格</span>
+            <strong id="detailSpec"></strong>
+          </div>
+
+          <div class="detail-row">
+            <span>商品效期</span>
+            <strong id="detailExpiry"></strong>
+          </div>
         </div>
+
+        <!-- 有口味／規格時才會顯示 -->
+        <section id="detailVariants" class="detail-variants hidden">
+          <h3>口味／規格選擇</h3>
+          <div id="detailVariantList" class="detail-variant-list"></div>
+        </section>
+
         <section class="detail-description-box">
           <h3>商品介紹</h3>
           <p id="detailDescription"></p>
         </section>
-        <p class="detail-note">商品資訊及庫存依門市現場實際狀況為主。</p>
+
+        <p class="detail-note">
+          商品資訊及庫存依門市現場實際狀況為主。
+        </p>
+
       </div>
     </article>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script>
     window.JOINBUY_CONFIG = {
       supabaseUrl: "https://gwrtxzaqvpawytmftutt.supabase.co",
       supabaseKey: "sb_publishable_3npPxEjVJEr6zL0DodRoIQ_MTu4TPy0"
     };
   </script>
+
   <script src="app.js"></script>
 </body>
 </html>
