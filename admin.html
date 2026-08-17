@@ -640,6 +640,91 @@
     .category-chip button{border:0;background:#f6eee5;border-radius:7px;padding:5px 7px;cursor:pointer;font-weight:800;color:var(--brown2)}
     .category-chip .cat-delete{color:var(--red);background:var(--red-bg)}
 
+
+    /* PRODUCT VARIANTS */
+    .variant-section{
+      margin-top:16px;
+      padding:14px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:#fbf6ef;
+    }
+
+    .variant-section-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:7px;
+    }
+
+    .variant-section-head h4{
+      margin:0;
+      color:var(--brown);
+      font-size:15px;
+    }
+
+    .variant-note{
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.6;
+      margin-bottom:10px;
+    }
+
+    .variant-list{
+      display:grid;
+      gap:10px;
+    }
+
+    .variant-card{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:14px;
+      padding:12px;
+    }
+
+    .variant-card-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      margin-bottom:10px;
+    }
+
+    .variant-card-title{
+      color:var(--brown2);
+      font-weight:900;
+      font-size:12px;
+    }
+
+    .variant-remove{
+      border:1px solid #edc9c5;
+      background:var(--red-bg);
+      color:var(--red);
+      border-radius:8px;
+      padding:6px 8px;
+      font-size:11px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .variant-empty{
+      padding:10px 0 2px;
+      color:var(--muted);
+      font-size:11px;
+    }
+
+    .variant-tag{
+      display:inline-block;
+      margin-top:4px;
+      padding:4px 7px;
+      border-radius:7px;
+      background:#f6eee5;
+      color:var(--brown2);
+      font-size:10px;
+      font-weight:800;
+    }
+
     @media(max-width:620px){
       .summary{grid-template-columns:repeat(3,1fr)}
       .summary-card{padding:11px}
@@ -840,7 +925,7 @@
             >
           </div>
 
-          <div class="field">
+          <div id="basePriceField" class="field">
             <label>售價 *</label>
             <input id="productPrice" type="number" min="0" inputmode="numeric" required placeholder="159">
           </div>
@@ -851,13 +936,13 @@
           <input id="productSpec" placeholder="例如：1kg／包">
         </div>
 
-        <div class="field">
+        <div id="baseExpiryField" class="field">
           <label>商品效期</label>
           <input id="expiryDate" type="date">
           <div class="expiry-note">未填可留白；後台會依日期自動顯示到期提醒。</div>
         </div>
 
-        <div class="field">
+        <div id="baseWarehouseField" class="field">
           <label>倉位 *</label>
           <select id="productWarehouse" required>
             <option value="">請選擇倉位</option>
@@ -878,7 +963,7 @@
           </select>
         </div>
 
-        <div class="grid2">
+        <div id="baseStatusFields" class="grid2">
           <div class="field">
             <label>庫存狀態 *</label>
             <select id="stockStatus" required>
@@ -896,7 +981,7 @@
           </div>
         </div>
 
-        <div class="field">
+        <div id="baseImageField" class="field">
           <label>商品圖片</label>
 
           <div class="image-upload">
@@ -930,6 +1015,19 @@
               </button>
             </div>
           </div>
+        </div>
+
+
+        <div class="variant-section">
+          <div class="variant-section-head">
+            <h4>口味／規格（選填）</h4>
+            <button id="addVariantBtn" class="btn btn-add" type="button">＋ 新增口味／規格</button>
+          </div>
+          <div class="variant-note">
+            沒有分口味的商品不用新增任何項目，照原本方式填寫即可。<br>
+            若有新增口味／規格，每一項都能獨立設定售價、效期、倉位、圖片、庫存與上架狀態。
+          </div>
+          <div id="variantList" class="variant-list"></div>
         </div>
 
         <div class="field">
@@ -1024,6 +1122,14 @@
     imagePreview: document.getElementById("imagePreview"),
     removeImageBtn: document.getElementById("removeImageBtn"),
     description: document.getElementById("description"),
+
+    addVariantBtn: document.getElementById("addVariantBtn"),
+    variantList: document.getElementById("variantList"),
+    basePriceField: document.getElementById("basePriceField"),
+    baseExpiryField: document.getElementById("baseExpiryField"),
+    baseWarehouseField: document.getElementById("baseWarehouseField"),
+    baseStatusFields: document.getElementById("baseStatusFields"),
+    baseImageField: document.getElementById("baseImageField"),
     saveProductBtn: document.getElementById("saveProductBtn"),
 
     toast: document.getElementById("toast")
@@ -1033,6 +1139,17 @@
   let categories = [];
   let previewObjectUrl = "";
   let imageMarkedForRemoval = false;
+
+  let productVariants = [];
+  let variantEditorState = [];
+  let variantKeyCounter = 1;
+
+  const warehouseOptions = [
+    "冰1-第1袋","冰1-第2袋","冰1-第3袋","冰1-第4袋",
+    "冰1-第5袋","冰1-第6袋","冰1-第7袋","冰1-第8袋",
+    "冰1","冰2","冰3","冰4","凍庫","冷藏"
+  ];
+
 
   const emojiMap = {
     "肉品": "🥩",
@@ -1142,6 +1259,7 @@
 
       products = [];
       categories = [];
+      productVariants = [];
       els.productBody.innerHTML = "";
 
       showLogin();
@@ -1155,7 +1273,7 @@
     els.emptyState.classList.add("hidden");
     els.tableWrap.classList.add("hidden");
 
-    const [categoryResult, productResult] = await Promise.all([
+    const [categoryResult, productResult, variantResult] = await Promise.all([
       db
         .from("categories")
         .select("id,name,sort_order,created_at")
@@ -1164,7 +1282,12 @@
       db
         .from("products")
         .select("*")
-        .order("created_at", { ascending:false })
+        .order("created_at", { ascending:false }),
+      db
+        .from("product_variants")
+        .select("*")
+        .order("sort_order", { ascending:true })
+        .order("id", { ascending:true })
     ]);
 
     els.loadingState.classList.add("hidden");
@@ -1179,6 +1302,11 @@
       return;
     }
 
+    if (variantResult.error) {
+      toast("讀取口味／規格失敗：" + variantResult.error.message);
+      return;
+    }
+
     categories = (categoryResult.data || [])
       .filter(item => String(item.name || "").trim())
       .map(item => ({
@@ -1188,6 +1316,7 @@
       }));
 
     products = productResult.data || [];
+    productVariants = variantResult.data || [];
 
     renderCategoryManager();
     buildCategoryFilter();
@@ -1532,9 +1661,62 @@
     return { text:"效期正常", cls:"expiry-normal", days:diff };
   }
 
+
+  function getVariantsForProduct(productId) {
+    return productVariants.filter(item => Number(item.product_id) === Number(productId));
+  }
+
+  function variantStockToProduct(value) {
+    return value === "庫存已售完" ? "sold_out" : "in_stock";
+  }
+
+  function variantListingToProduct(value) {
+    return value === "下架" ? "unlisted" : "listed";
+  }
+
+  function getProductDisplayInfo(product) {
+    const variants = getVariantsForProduct(product.id);
+    if (!variants.length) {
+      return {
+        variants,
+        priceText:`$${Number(product.price || 0).toLocaleString()}`,
+        warehouseText:product.warehouse || "",
+        expiryDate:product.expiry_date || "",
+        stockStatus:product.stock_status,
+        listingStatus:product.listing_status
+      };
+    }
+
+    const prices = variants
+      .map(v => Number(v.price))
+      .filter(v => Number.isFinite(v));
+    const minPrice = prices.length ? Math.min(...prices) : 0;
+    const maxPrice = prices.length ? Math.max(...prices) : 0;
+    const priceText = minPrice === maxPrice
+      ? `$${minPrice.toLocaleString()}`
+      : `$${minPrice.toLocaleString()}～$${maxPrice.toLocaleString()}`;
+
+    const warehouses = [...new Set(variants.map(v => v.warehouse).filter(Boolean))];
+    const warehouseText = warehouses.length <= 2
+      ? warehouses.join("／")
+      : `${warehouses.slice(0,2).join("／")}…`;
+
+    const expiryDates = variants.map(v => v.expiry_date).filter(Boolean).sort();
+    const expiryDate = expiryDates[0] || "";
+
+    const stockStatus = variants.some(v => v.stock_status === "尚有庫存")
+      ? "in_stock"
+      : "sold_out";
+
+    const listingStatus = variants.some(v => v.listing_status === "上架")
+      ? "listed"
+      : "unlisted";
+
+    return { variants, priceText, warehouseText, expiryDate, stockStatus, listingStatus };
+  }
+
   function renderProducts() {
-    const list =
-      getFilteredProducts();
+    const list = getFilteredProducts();
 
     if (!list.length) {
       els.tableWrap.classList.add("hidden");
@@ -1545,99 +1727,77 @@
     els.emptyState.classList.add("hidden");
     els.tableWrap.classList.remove("hidden");
 
-    els.productBody.innerHTML =
-      list.map(product => {
+    els.productBody.innerHTML = list.map(product => {
+      const display = getProductDisplayInfo(product);
 
-        const image =
-          product.image_url
-            ? `
-              <img
-                class="thumb"
-                src="${escapeHtml(product.image_url)}"
-                alt="${escapeHtml(product.name)}"
-              >
-            `
-            : `
-              <div class="thumb-fallback">
-                ${emojiMap[product.category] || "❄️"}
-              </div>
-            `;
+      const imageUrl =
+        display.variants.find(v => v.image_url)?.image_url ||
+        product.image_url;
 
-        const stock =
-          product.stock_status === "sold_out"
-            ? `<span class="badge badge-orange">庫存已售完</span>`
-            : `<span class="badge badge-green">尚有庫存</span>`;
-
-        const listing =
-          product.listing_status === "unlisted"
-            ? `<span class="badge badge-gray">已下架</span>`
-            : `<span class="badge badge-green">上架中</span>`;
-
-        return `
-          <tr>
-
-            <td>
-              <div class="product-cell">
-                ${image}
-
-                <div>
-                  <div class="pname">
-                    ${escapeHtml(product.name || "")}
-                  </div>
-
-                  <div class="pspec">
-                    ${escapeHtml(product.spec || "")}
-                  </div>
-                </div>
-              </div>
-            </td>
-
-            <td>
-              ${escapeHtml(product.category || "")}
-            </td>
-
-            <td class="price">
-              $${Number(product.price || 0).toLocaleString()}
-            </td>
-
-            <td>
-              ${escapeHtml(product.warehouse || "")}
-            </td>
-
-            <td>
-              <div>${formatDateOnly(product.expiry_date)}</div>
-              <span class="expiry-badge ${getExpiryInfo(product.expiry_date).cls}">
-                ${getExpiryInfo(product.expiry_date).text}
-              </span>
-            </td>
-
-            <td>${stock}</td>
-
-            <td>${listing}</td>
-
-            <td>
-              <div class="actions">
-
-                <button
-                  class="small-btn edit-btn"
-                  onclick="editProduct(${product.id})"
-                >
-                  編輯
-                </button>
-
-                <button
-                  class="small-btn delete-btn"
-                  onclick="deleteProduct(${product.id})"
-                >
-                  刪除
-                </button>
-
-              </div>
-            </td>
-
-          </tr>
+      const image = imageUrl
+        ? `
+          <img
+            class="thumb"
+            src="${escapeHtml(imageUrl)}"
+            alt="${escapeHtml(product.name)}"
+          >
+        `
+        : `
+          <div class="thumb-fallback">
+            ${emojiMap[product.category] || "❄️"}
+          </div>
         `;
-      }).join("");
+
+      const stock =
+        display.stockStatus === "sold_out"
+          ? `<span class="badge badge-orange">庫存已售完</span>`
+          : `<span class="badge badge-green">尚有庫存</span>`;
+
+      const listing =
+        display.listingStatus === "unlisted"
+          ? `<span class="badge badge-gray">已下架</span>`
+          : `<span class="badge badge-green">上架中</span>`;
+
+      const variantTag = display.variants.length
+        ? `<div class="variant-tag">${display.variants.length} 個口味／規格</div>`
+        : "";
+
+      return `
+        <tr>
+          <td>
+            <div class="product-cell">
+              ${image}
+              <div>
+                <div class="pname">${escapeHtml(product.name || "")}</div>
+                <div class="pspec">${escapeHtml(product.spec || "")}</div>
+                ${variantTag}
+              </div>
+            </div>
+          </td>
+
+          <td>${escapeHtml(product.category || "")}</td>
+          <td class="price">${display.priceText}</td>
+          <td>${escapeHtml(display.warehouseText)}</td>
+
+          <td>
+            <div>${formatDateOnly(display.expiryDate)}</div>
+            <span class="expiry-badge ${getExpiryInfo(display.expiryDate).cls}">
+              ${getExpiryInfo(display.expiryDate).text}
+            </span>
+          </td>
+
+          <td>${stock}</td>
+          <td>${listing}</td>
+
+          <td>
+            <div class="actions">
+              <button class="small-btn edit-btn" onclick="editProduct(${product.id})">編輯</button>
+              <button class="small-btn delete-btn" onclick="deleteProduct(${product.id})">刪除</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join("");
   }
 
   function clearPreviewObjectUrl() {
@@ -1666,6 +1826,157 @@
     hideImagePreview();
   }
 
+
+  function clearVariantPreviewUrls() {
+    variantEditorState.forEach(item => {
+      if (item.previewObjectUrl) {
+        URL.revokeObjectURL(item.previewObjectUrl);
+        item.previewObjectUrl = "";
+      }
+    });
+  }
+
+  function makeVariantState(data = {}) {
+    return {
+      key:`v${variantKeyCounter++}`,
+      id:data.id || null,
+      variant_name:data.variant_name || "",
+      price:data.price ?? "",
+      expiry_date:data.expiry_date || "",
+      warehouse:data.warehouse || "",
+      image_url:data.image_url || "",
+      originalImageUrl:data.image_url || "",
+      stock_status:data.stock_status || "尚有庫存",
+      listing_status:data.listing_status || "上架",
+      sort_order:Number(data.sort_order || 0),
+      file:null,
+      previewObjectUrl:"",
+      imageMarkedForRemoval:false
+    };
+  }
+
+  function syncBaseProductFieldsVisibility() {
+    const hasVariants = variantEditorState.length > 0;
+    [
+      els.basePriceField,
+      els.baseExpiryField,
+      els.baseWarehouseField,
+      els.baseStatusFields,
+      els.baseImageField
+    ].forEach(el => el?.classList.toggle("hidden", hasVariants));
+
+    els.productPrice.required = !hasVariants;
+    els.productWarehouse.required = !hasVariants;
+  }
+
+  function renderVariantEditor() {
+    syncBaseProductFieldsVisibility();
+
+    if (!variantEditorState.length) {
+      els.variantList.innerHTML =
+        '<div class="variant-empty">此商品目前沒有口味／規格，會使用上方一般商品資料。</div>';
+      return;
+    }
+
+    els.variantList.innerHTML = variantEditorState.map((item, index) => {
+      const imageSrc = item.imageMarkedForRemoval
+        ? ""
+        : (item.previewObjectUrl || item.image_url || "");
+
+      const warehouseHtml = warehouseOptions.map(name =>
+        `<option value="${escapeHtml(name)}" ${item.warehouse === name ? "selected" : ""}>${escapeHtml(name)}</option>`
+      ).join("");
+
+      return `
+        <div class="variant-card" data-key="${item.key}">
+          <div class="variant-card-head">
+            <div class="variant-card-title">口味／規格 ${index + 1}</div>
+            <button class="variant-remove" type="button" data-action="remove-variant">刪除這個口味</button>
+          </div>
+
+          <div class="field">
+            <label>口味／規格名稱 *</label>
+            <input data-field="variant_name" value="${escapeHtml(item.variant_name)}" placeholder="例如：原味、辣味、起司" required>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <label>售價 *</label>
+              <input data-field="price" type="number" min="0" inputmode="numeric" value="${escapeHtml(item.price)}" placeholder="159" required>
+            </div>
+            <div class="field">
+              <label>商品效期</label>
+              <input data-field="expiry_date" type="date" value="${escapeHtml(item.expiry_date)}">
+            </div>
+          </div>
+
+          <div class="field">
+            <label>倉位 *</label>
+            <select data-field="warehouse" required>
+              <option value="">請選擇倉位</option>
+              ${warehouseHtml}
+            </select>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <label>庫存狀態 *</label>
+              <select data-field="stock_status" required>
+                <option value="尚有庫存" ${item.stock_status === "尚有庫存" ? "selected" : ""}>尚有庫存</option>
+                <option value="庫存已售完" ${item.stock_status === "庫存已售完" ? "selected" : ""}>庫存已售完</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>上架狀態 *</label>
+              <select data-field="listing_status" required>
+                <option value="上架" ${item.listing_status === "上架" ? "selected" : ""}>上架</option>
+                <option value="下架" ${item.listing_status === "下架" ? "selected" : ""}>下架</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>口味／規格圖片</label>
+            <div class="image-upload">
+              <div class="image-picker">
+                <input id="variantFile-${item.key}" class="image-file" data-action="variant-file" type="file" accept="image/*">
+                <label for="variantFile-${item.key}" class="image-pick-btn">📷 選擇圖片</label>
+                <div class="image-help">每個口味可使用不同圖片。</div>
+              </div>
+
+              <div class="image-preview-wrap ${imageSrc ? "" : "hidden"}" data-role="variant-preview-wrap">
+                <img class="image-preview" src="${imageSrc ? escapeHtml(imageSrc) : ""}" alt="口味圖片預覽">
+                <button class="remove-image-btn" type="button" data-action="remove-variant-image">移除圖片</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function addVariant(data = {}) {
+    variantEditorState.push(makeVariantState(data));
+    renderVariantEditor();
+  }
+
+  function validateVariants() {
+    if (!variantEditorState.length) return;
+
+    for (let i = 0; i < variantEditorState.length; i++) {
+      const item = variantEditorState[i];
+      if (!String(item.variant_name || "").trim()) {
+        throw new Error(`請輸入口味／規格 ${i + 1} 的名稱`);
+      }
+      if (item.price === "" || Number(item.price) < 0) {
+        throw new Error(`請輸入口味／規格 ${i + 1} 的售價`);
+      }
+      if (!item.warehouse) {
+        throw new Error(`請選擇口味／規格 ${i + 1} 的倉位`);
+      }
+    }
+  }
+
   function openAddModal() {
     els.modalTitle.textContent =
       "新增商品";
@@ -1687,6 +1998,10 @@
 
     resetImageField();
 
+    clearVariantPreviewUrls();
+    variantEditorState = [];
+    renderVariantEditor();
+
     els.productModal.classList.remove(
       "hidden"
     );
@@ -1694,6 +2009,7 @@
 
   function closeModal() {
     clearPreviewObjectUrl();
+    clearVariantPreviewUrls();
 
     els.productModal.classList.add(
       "hidden"
@@ -1755,6 +2071,10 @@
 
     els.description.value =
       product.description || "";
+
+    clearVariantPreviewUrls();
+    variantEditorState = getVariantsForProduct(product.id).map(item => makeVariantState(item));
+    renderVariantEditor();
 
     els.productModal.classList.remove(
       "hidden"
@@ -1911,6 +2231,10 @@
 
       if (!confirmed) return;
 
+      const variantImages = getVariantsForProduct(id)
+        .map(item => item.image_url)
+        .filter(Boolean);
+
       const {
         error
       } = await db
@@ -1926,10 +2250,13 @@
         return;
       }
 
-      if (product.image_url) {
-        await removeStorageImageByUrl(
-          product.image_url
-        );
+      const imageUrlsToRemove = [...new Set([
+        product.image_url,
+        ...variantImages
+      ].filter(Boolean))];
+
+      for (const url of imageUrlsToRemove) {
+        await removeStorageImageByUrl(url);
       }
 
       toast("商品已刪除");
@@ -1943,40 +2270,19 @@
       event.preventDefault();
 
       els.saveProductBtn.disabled = true;
-      els.saveProductBtn.textContent =
-        "儲存中...";
+      els.saveProductBtn.textContent = "儲存中...";
 
-      const id =
-        els.productId.value;
-
-      const oldImageUrl =
-        els.currentImageUrl.value.trim();
-
-      const selectedFile =
-        els.imageFile.files?.[0] || null;
+      const id = els.productId.value;
+      const oldImageUrl = els.currentImageUrl.value.trim();
+      const selectedFile = els.imageFile.files?.[0] || null;
 
       let newUpload = null;
-      let finalImageUrl =
-        imageMarkedForRemoval
-          ? null
-          : (oldImageUrl || null);
+      const uploadedPaths = [];
+      let finalImageUrl = imageMarkedForRemoval ? null : (oldImageUrl || null);
+      const oldVariants = id ? getVariantsForProduct(Number(id)) : [];
 
       try {
-        if (selectedFile) {
-          els.saveProductBtn.textContent =
-            "上傳圖片中...";
-
-          newUpload =
-            await uploadProductImage(
-              selectedFile
-            );
-
-          finalImageUrl =
-            newUpload.publicUrl;
-        }
-
-        els.saveProductBtn.textContent =
-          "儲存商品中...";
+        validateVariants();
 
         const selectedCategory =
           els.productCategory.value === "__new__"
@@ -2003,105 +2309,266 @@
           if (categoryError) throw categoryError;
         }
 
-        const payload = {
-          name:
-            els.productName.value.trim(),
+        const preparedVariants = [];
 
-          category:
-            selectedCategory,
+        if (variantEditorState.length) {
+          els.saveProductBtn.textContent = "上傳口味圖片中...";
 
-          price:
-            Number(
-              els.productPrice.value || 0
-            ),
+          for (let index = 0; index < variantEditorState.length; index++) {
+            const item = variantEditorState[index];
+            let imageUrl = item.imageMarkedForRemoval ? null : (item.image_url || null);
 
-          spec:
-            els.productSpec.value.trim() || null,
+            if (item.file) {
+              const upload = await uploadProductImage(item.file);
+              uploadedPaths.push(upload.path);
+              imageUrl = upload.publicUrl;
+            }
 
-          expiry_date:
-            els.expiryDate.value || null,
-
-          warehouse:
-            els.productWarehouse.value,
-
-          stock_status:
-            els.stockStatus.value,
-
-          listing_status:
-            els.listingStatus.value,
-
-          image_url:
-            finalImageUrl,
-
-          description:
-            els.description.value.trim() || null
-        };
-
-        let error;
-
-        if (id) {
-          ({
-            error
-          } = await db
-            .from("products")
-            .update(payload)
-            .eq("id", Number(id)));
-        } else {
-          ({
-            error
-          } = await db
-            .from("products")
-            .insert(payload));
-        }
-
-        if (error) {
-          if (newUpload?.path) {
-            await db.storage
-              .from(STORAGE_BUCKET)
-              .remove([newUpload.path]);
+            preparedVariants.push({
+              ...item,
+              variant_name:String(item.variant_name || "").trim(),
+              price:Number(item.price || 0),
+              expiry_date:item.expiry_date || null,
+              warehouse:item.warehouse,
+              image_url:imageUrl,
+              stock_status:item.stock_status,
+              listing_status:item.listing_status,
+              sort_order:index + 1
+            });
           }
 
-          throw error;
+          const first = preparedVariants[0];
+          finalImageUrl = first.image_url || null;
+
+        } else if (selectedFile) {
+          els.saveProductBtn.textContent = "上傳圖片中...";
+          newUpload = await uploadProductImage(selectedFile);
+          uploadedPaths.push(newUpload.path);
+          finalImageUrl = newUpload.publicUrl;
         }
 
-        const oldImageShouldBeDeleted =
-          oldImageUrl &&
-          (
-            imageMarkedForRemoval ||
-            (
-              newUpload?.publicUrl &&
-              newUpload.publicUrl !== oldImageUrl
-            )
-          );
+        els.saveProductBtn.textContent = "儲存商品中...";
 
-        if (oldImageShouldBeDeleted) {
-          await removeStorageImageByUrl(
-            oldImageUrl
-          );
+        const firstVariant = preparedVariants[0] || null;
+
+        const payload = {
+          name:els.productName.value.trim(),
+          category:selectedCategory,
+
+          price:firstVariant
+            ? Number(firstVariant.price || 0)
+            : Number(els.productPrice.value || 0),
+
+          spec:els.productSpec.value.trim() || null,
+
+          expiry_date:firstVariant
+            ? (firstVariant.expiry_date || null)
+            : (els.expiryDate.value || null),
+
+          warehouse:firstVariant
+            ? firstVariant.warehouse
+            : els.productWarehouse.value,
+
+          stock_status:firstVariant
+            ? variantStockToProduct(firstVariant.stock_status)
+            : els.stockStatus.value,
+
+          listing_status:firstVariant
+            ? variantListingToProduct(firstVariant.listing_status)
+            : els.listingStatus.value,
+
+          image_url:finalImageUrl,
+          description:els.description.value.trim() || null
+        };
+
+        let productId = id ? Number(id) : null;
+
+        if (productId) {
+          const { error } = await db
+            .from("products")
+            .update(payload)
+            .eq("id", productId);
+
+          if (error) throw error;
+        } else {
+          const { data, error } = await db
+            .from("products")
+            .insert(payload)
+            .select("id")
+            .single();
+
+          if (error) throw error;
+          productId = data.id;
+        }
+
+        const keptVariantIds = [];
+
+        for (const item of preparedVariants) {
+          const variantPayload = {
+            product_id:productId,
+            variant_name:item.variant_name,
+            price:item.price,
+            expiry_date:item.expiry_date,
+            warehouse:item.warehouse,
+            image_url:item.image_url,
+            stock_status:item.stock_status,
+            listing_status:item.listing_status,
+            sort_order:item.sort_order
+          };
+
+          if (item.id) {
+            const { error } = await db
+              .from("product_variants")
+              .update(variantPayload)
+              .eq("id", Number(item.id));
+
+            if (error) throw error;
+            keptVariantIds.push(Number(item.id));
+          } else {
+            const { data, error } = await db
+              .from("product_variants")
+              .insert(variantPayload)
+              .select("id")
+              .single();
+
+            if (error) throw error;
+            keptVariantIds.push(Number(data.id));
+          }
+        }
+
+        const removedVariants = oldVariants.filter(
+          item => !keptVariantIds.includes(Number(item.id))
+        );
+
+        for (const item of removedVariants) {
+          const { error } = await db
+            .from("product_variants")
+            .delete()
+            .eq("id", Number(item.id));
+
+          if (error) throw error;
+        }
+
+        const newVariantUrls = preparedVariants
+          .map(item => item.image_url)
+          .filter(Boolean);
+
+        const oldVariantUrlsToRemove = oldVariants
+          .map(item => item.image_url)
+          .filter(Boolean)
+          .filter(url => !newVariantUrls.includes(url));
+
+        for (const url of [...new Set(oldVariantUrlsToRemove)]) {
+          await removeStorageImageByUrl(url);
+        }
+
+        if (!preparedVariants.length) {
+          const oldImageShouldBeDeleted =
+            oldImageUrl &&
+            (
+              imageMarkedForRemoval ||
+              (newUpload?.publicUrl && newUpload.publicUrl !== oldImageUrl)
+            );
+
+          if (oldImageShouldBeDeleted) {
+            await removeStorageImageByUrl(oldImageUrl);
+          }
+        } else if (oldImageUrl && !newVariantUrls.includes(oldImageUrl)) {
+          await removeStorageImageByUrl(oldImageUrl);
         }
 
         closeModal();
-
-        toast(
-          id
-            ? "商品修改完成"
-            : "商品新增完成"
-        );
-
+        toast(id ? "商品修改完成" : "商品新增完成");
         await loadProducts();
 
       } catch (error) {
-        toast(
-          "儲存失敗：" +
-          (error?.message || "未知錯誤")
-        );
+        for (const path of uploadedPaths) {
+          await db.storage.from(STORAGE_BUCKET).remove([path]);
+        }
+
+        toast("儲存失敗：" + (error?.message || "未知錯誤"));
       } finally {
         els.saveProductBtn.disabled = false;
-        els.saveProductBtn.textContent =
-          "儲存商品";
+        els.saveProductBtn.textContent = "儲存商品";
       }
     }
   );
+
+
+  els.addVariantBtn.addEventListener("click", () => {
+    addVariant();
+  });
+
+  els.variantList.addEventListener("input", event => {
+    const card = event.target.closest(".variant-card");
+    const field = event.target.dataset.field;
+    if (!card || !field) return;
+
+    const item = variantEditorState.find(v => v.key === card.dataset.key);
+    if (!item) return;
+
+    item[field] = event.target.value;
+  });
+
+  els.variantList.addEventListener("change", event => {
+    const card = event.target.closest(".variant-card");
+    if (!card) return;
+
+    const item = variantEditorState.find(v => v.key === card.dataset.key);
+    if (!item) return;
+
+    const field = event.target.dataset.field;
+    if (field) {
+      item[field] = event.target.value;
+      return;
+    }
+
+    if (event.target.dataset.action === "variant-file") {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      if (!file.type.startsWith("image/")) {
+        toast("請選擇圖片檔案");
+        return;
+      }
+
+      if (item.previewObjectUrl) URL.revokeObjectURL(item.previewObjectUrl);
+      item.file = file;
+      item.previewObjectUrl = URL.createObjectURL(file);
+      item.imageMarkedForRemoval = false;
+      renderVariantEditor();
+    }
+  });
+
+  els.variantList.addEventListener("click", event => {
+    const button = event.target.closest("button");
+    if (!button) return;
+
+    const card = button.closest(".variant-card");
+    if (!card) return;
+
+    const index = variantEditorState.findIndex(v => v.key === card.dataset.key);
+    if (index < 0) return;
+
+    const item = variantEditorState[index];
+
+    if (button.dataset.action === "remove-variant") {
+      if (!confirm(`確定要移除「${item.variant_name || "這個口味／規格"}」嗎？`)) return;
+      if (item.previewObjectUrl) URL.revokeObjectURL(item.previewObjectUrl);
+      variantEditorState.splice(index, 1);
+      renderVariantEditor();
+      return;
+    }
+
+    if (button.dataset.action === "remove-variant-image") {
+      if (item.previewObjectUrl) URL.revokeObjectURL(item.previewObjectUrl);
+      item.previewObjectUrl = "";
+      item.file = null;
+      item.image_url = "";
+      item.imageMarkedForRemoval = true;
+      renderVariantEditor();
+    }
+  });
 
   els.productCategory.addEventListener(
     "change",
