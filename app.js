@@ -7,7 +7,7 @@ const client = window.supabase.createClient(
 
 const els = {
   search: document.getElementById('searchInput'),
-  tabs: document.getElementById('tabs'),
+  categorySelect: document.getElementById('categorySelect'),
   grid: document.getElementById('grid'),
   loading: document.getElementById('loading'),
   error: document.getElementById('errorState'),
@@ -134,38 +134,33 @@ function getProductDisplayInfo(product){
   };
 }
 
-function renderTabs(){
+function renderCategorySelect(){
   const categories = [
     '全部',
     ...Array.from(
       new Set(
         allProducts
-          .map(p => p.category)
+          .map(product => product.category)
           .filter(Boolean)
       )
     )
   ];
 
-  els.tabs.innerHTML = '';
+  els.categorySelect.innerHTML = '';
 
-  categories.forEach(cat => {
-    const button =
-      document.createElement('button');
+  categories.forEach(category => {
+    const option = document.createElement('option');
 
-    button.className =
-      'tab' +
-      (cat === activeCategory ? ' active' : '');
+    option.value = category;
+    option.textContent =
+      category === '全部'
+        ? '全部分類'
+        : category;
 
-    button.textContent = cat;
-
-    button.onclick = () => {
-      activeCategory = cat;
-      renderTabs();
-      renderProducts();
-    };
-
-    els.tabs.appendChild(button);
+    els.categorySelect.appendChild(option);
   });
+
+  els.categorySelect.value = activeCategory;
 }
 
 function renderProducts(){
@@ -600,13 +595,21 @@ async function loadProducts(){
     activeCategory = '全部';
   }
 
-  renderTabs();
-  renderProducts();
+renderCategorySelect();
+renderProducts();
 }
 
 els.search.addEventListener(
   'input',
   renderProducts
+);
+
+els.categorySelect.addEventListener(
+  'change',
+  event => {
+    activeCategory = event.target.value;
+    renderProducts();
+  }
 );
 
 els.refresh.addEventListener(
