@@ -200,3 +200,73 @@ body.modal-open{overflow:hidden}
     margin-top:5px;
   }
 }
+/* ===== 商品分類下拉選單美化 ===== */
+
+.category-select-wrap{
+  width:100%;
+  margin-top:12px;
+}
+
+.category-select-wrap label{
+  display:block;
+  margin:0 0 7px 4px;
+  color:#6f5848;
+  font-size:13px;
+  font-weight:800;
+}
+
+.category-select-wrap select{
+  width:100%;
+  height:48px;
+  padding:0 44px 0 16px;
+
+  border:1px solid #e2d3c1;
+  border-radius:15px;
+
+  background-color:#fffdf9;
+  color:#4f3828;
+
+  font-size:16px;
+  font-weight:700;
+  font-family:inherit;
+
+  outline:none;
+  cursor:pointer;
+
+  box-shadow:
+    0 3px 10px rgba(90,65,45,.05);
+
+  transition:
+    border-color .2s ease,
+    box-shadow .2s ease;
+}
+
+.category-select-wrap select:focus{
+  border-color:#a94f24;
+
+  box-shadow:
+    0 0 0 3px rgba(169,79,36,.10);
+}
+
+/* 搜尋＋分類區塊間距 */
+.controls{
+  gap:10px;
+}
+
+/* 手機版 */
+@media (max-width:480px){
+
+  .category-select-wrap{
+    margin-top:10px;
+  }
+
+  .category-select-wrap select{
+    height:46px;
+    border-radius:14px;
+    font-size:15px;
+  }
+
+  .category-select-wrap label{
+    font-size:12px;
+  }
+}
