@@ -15,7 +15,35 @@
 .field{margin-bottom:14px}.field label{display:block;font-size:12px;font-weight:800;color:var(--brown2);margin:0 0 6px}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px 13px;outline:none;color:#292019}.field textarea{min-height:90px;resize:vertical}.field input:focus,.field select:focus,.field textarea:focus{border-color:#a98564;box-shadow:0 0 0 3px rgba(169,133,100,.12)}
 .primary,.save-btn{border:0;border-radius:12px;padding:13px 15px;background:var(--brown);color:#fff;font-weight:800;cursor:pointer}.primary{width:100%}.primary:disabled,.save-btn:disabled{opacity:.55;cursor:not-allowed}.login-error{margin-top:12px;padding:10px 12px;border-radius:10px;background:var(--red-bg);color:var(--red);font-size:12px}
 .admin-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.admin-head h2{margin:0;color:var(--brown);font-size:24px}.admin-head p{margin:4px 0 0;color:var(--muted);font-size:12px}.head-actions{display:flex;gap:8px}.btn{border:1px solid var(--line);background:#fff;color:var(--brown2);border-radius:11px;padding:10px 12px;font-weight:800;cursor:pointer}.btn-add{background:var(--brown);color:#fff;border-color:var(--brown)}
-.category-manager{padding:14px;margin-bottom:14px}.category-manager-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.category-manager-head h3{margin:0;color:var(--brown);font-size:16px}.category-list{display:flex;flex-wrap:wrap;gap:8px}.category-chip{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:7px 8px 7px 11px}.category-chip-name{font-weight:800;color:var(--brown2);font-size:12px}.category-chip button{border:0;background:#f6eee5;border-radius:7px;padding:5px 7px;cursor:pointer;font-weight:800;color:var(--brown2)}.category-chip .cat-delete{color:var(--red);background:var(--red-bg)}
+.category-manager{padding:14px;margin-bottom:14px}
+.category-manager-head{cursor:pointer;user-select:none}
+.category-manager-head .collapse-meta{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:3px;
+  color:var(--muted);
+  font-size:11px;
+  font-weight:700;
+}
+.category-manager-head .collapse-arrow{
+  display:inline-block;
+  font-size:15px;
+  transition:transform .2s ease;
+}
+.category-manager.collapsed .collapse-arrow{
+  transform:rotate(-90deg);
+}
+.category-manager-body{
+  margin-top:10px;
+  max-height:280px;
+  overflow-y:auto;
+  padding-right:2px;
+  -webkit-overflow-scrolling:touch;
+}
+.category-manager.collapsed .category-manager-body{
+  display:none;
+}.category-manager-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.category-manager-head h3{margin:0;color:var(--brown);font-size:16px}.category-list{display:flex;flex-wrap:wrap;gap:8px}.category-chip{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:7px 8px 7px 11px}.category-chip-name{font-weight:800;color:var(--brown2);font-size:12px}.category-chip button{border:0;background:#f6eee5;border-radius:7px;padding:5px 7px;cursor:pointer;font-weight:800;color:var(--brown2)}.category-chip .cat-delete{color:var(--red);background:var(--red-bg)}
 .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px}.summary-card{padding:15px;border-radius:16px;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow)}.summary-card small{color:var(--muted);font-size:11px}.summary-card strong{display:block;color:var(--brown);font-size:24px;margin-top:4px}
 .toolbar{padding:12px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:8px}.toolbar input,.toolbar select{border:1px solid var(--line);background:#fff;border-radius:11px;padding:10px 12px;outline:none}.toolbar input{flex:1 1 220px}.toolbar select{flex:0 1 180px}
 .table-wrap{overflow-x:auto;border-radius:18px}table{width:100%;min-width:880px;border-collapse:collapse;background:var(--panel)}th,td{text-align:left;border-bottom:1px solid #eee4d8;padding:11px 10px;vertical-align:middle;font-size:12px}th{color:var(--brown2);font-size:11px;background:#f9f4ed;white-space:nowrap}.product-cell{display:flex;align-items:center;gap:9px;min-width:180px}.thumb,.thumb-fallback{width:56px;height:56px;border-radius:10px;background:#efe4d5;flex:none}.thumb{object-fit:cover}.thumb-fallback{display:grid;place-items:center;font-size:24px}.pname{font-weight:800}.pspec{margin-top:3px;color:var(--muted);font-size:10px}.price{color:#a94f24;font-weight:900;white-space:nowrap}.badge{display:inline-block;padding:5px 7px;border-radius:8px;font-size:10px;font-weight:800;white-space:nowrap}.badge-green{color:var(--green);background:var(--green-bg)}.badge-orange{color:var(--orange);background:var(--orange-bg)}.badge-gray{color:var(--gray);background:var(--gray-bg)}.actions{display:flex;gap:6px;white-space:nowrap}.small-btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 9px;font-size:11px;font-weight:800;cursor:pointer}.edit-btn{color:var(--brown)}.delete-btn{color:var(--red);border-color:#edc9c5}
@@ -34,7 +62,21 @@
 <section id="loginView" class="login-wrap"><div class="card login-card"><div class="login-icon">🔐</div><h2>店家管理登入</h2><p class="sub">此頁僅供揪愛買店家管理使用。<br>請輸入管理員帳號與密碼。</p><form id="loginForm"><div class="field"><label>Email</label><input id="email" type="email" autocomplete="username" placeholder="請輸入管理員 Email" required></div><div class="field"><label>密碼</label><input id="password" type="password" autocomplete="current-password" placeholder="請輸入密碼" required></div><button id="loginBtn" class="primary" type="submit">登入管理後台</button><div id="loginError" class="login-error hidden"></div></form></div></section>
 <section id="adminView" class="hidden">
 <div class="admin-head"><div><h2>商品管理</h2><p id="adminEmail">管理員</p></div><div class="head-actions"><button id="refreshBtn" class="btn">重新整理</button><button id="addBtn" class="btn btn-add">＋ 新增商品</button></div></div>
-<div class="card category-manager"><div class="category-manager-head"><h3>分類管理</h3><button id="addCategoryBtn" class="btn btn-add" type="button">＋ 新增分類</button></div><div id="categoryList" class="category-list"></div></div>
+<div id="categoryManager" class="card category-manager collapsed">
+  <div id="categoryManagerToggle" class="category-manager-head" role="button" tabindex="0" aria-expanded="false">
+    <div>
+      <h3>分類管理</h3>
+      <div class="collapse-meta">
+        <span id="categoryCountText">0 個分類</span>
+        <span class="collapse-arrow">⌄</span>
+      </div>
+    </div>
+    <button id="addCategoryBtn" class="btn btn-add" type="button">＋ 新增分類</button>
+  </div>
+  <div class="category-manager-body">
+    <div id="categoryList" class="category-list"></div>
+  </div>
+</div>
 <div class="summary"><div class="summary-card"><small>全部商品</small><strong id="totalCount">0</strong></div><div class="summary-card"><small>尚有庫存</small><strong id="stockCount">0</strong></div><div class="summary-card"><small>已下架</small><strong id="unlistedCount">0</strong></div></div>
 <div class="card toolbar">
 <input id="searchInput" type="search" placeholder="搜尋商品名稱">
@@ -68,7 +110,7 @@ const SUPABASE_KEY="sb_publishable_3npPxEjVJEr6zL0DodRoIQ_MTu4TPy0";
 const STORAGE_BUCKET="product-images";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-const els={loginView:q("loginView"),adminView:q("adminView"),loginForm:q("loginForm"),email:q("email"),password:q("password"),loginBtn:q("loginBtn"),loginError:q("loginError"),logoutBtn:q("logoutBtn"),adminEmail:q("adminEmail"),refreshBtn:q("refreshBtn"),addBtn:q("addBtn"),addCategoryBtn:q("addCategoryBtn"),categoryList:q("categoryList"),totalCount:q("totalCount"),stockCount:q("stockCount"),unlistedCount:q("unlistedCount"),searchInput:q("searchInput"),categoryFilter:q("categoryFilter"),listingFilter:q("listingFilter"),expiryFilter:q("expiryFilter"),loadingState:q("loadingState"),emptyState:q("emptyState"),tableWrap:q("tableWrap"),productBody:q("productBody"),productModal:q("productModal"),modalTitle:q("modalTitle"),closeModalBtn:q("closeModalBtn"),cancelModalBtn:q("cancelModalBtn"),productForm:q("productForm"),productId:q("productId"),productName:q("productName"),productCategory:q("productCategory"),customCategory:q("customCategory"),productPrice:q("productPrice"),productSpec:q("productSpec"),expiryDate:q("expiryDate"),productWarehouse:q("productWarehouse"),stockStatus:q("stockStatus"),listingStatus:q("listingStatus"),imageFile:q("imageFile"),currentImageUrl:q("currentImageUrl"),imagePreviewWrap:q("imagePreviewWrap"),imagePreview:q("imagePreview"),removeImageBtn:q("removeImageBtn"),description:q("description"),addVariantBtn:q("addVariantBtn"),variantList:q("variantList"),basePriceField:q("basePriceField"),baseExpiryField:q("baseExpiryField"),baseWarehouseField:q("baseWarehouseField"),baseStatusFields:q("baseStatusFields"),baseImageField:q("baseImageField"),saveProductBtn:q("saveProductBtn"),toast:q("toast")};
+const els={loginView:q("loginView"),adminView:q("adminView"),loginForm:q("loginForm"),email:q("email"),password:q("password"),loginBtn:q("loginBtn"),loginError:q("loginError"),logoutBtn:q("logoutBtn"),adminEmail:q("adminEmail"),refreshBtn:q("refreshBtn"),addBtn:q("addBtn"),addCategoryBtn:q("addCategoryBtn"),categoryManager:q("categoryManager"),categoryManagerToggle:q("categoryManagerToggle"),categoryCountText:q("categoryCountText"),categoryList:q("categoryList"),totalCount:q("totalCount"),stockCount:q("stockCount"),unlistedCount:q("unlistedCount"),searchInput:q("searchInput"),categoryFilter:q("categoryFilter"),listingFilter:q("listingFilter"),expiryFilter:q("expiryFilter"),loadingState:q("loadingState"),emptyState:q("emptyState"),tableWrap:q("tableWrap"),productBody:q("productBody"),productModal:q("productModal"),modalTitle:q("modalTitle"),closeModalBtn:q("closeModalBtn"),cancelModalBtn:q("cancelModalBtn"),productForm:q("productForm"),productId:q("productId"),productName:q("productName"),productCategory:q("productCategory"),customCategory:q("customCategory"),productPrice:q("productPrice"),productSpec:q("productSpec"),expiryDate:q("expiryDate"),productWarehouse:q("productWarehouse"),stockStatus:q("stockStatus"),listingStatus:q("listingStatus"),imageFile:q("imageFile"),currentImageUrl:q("currentImageUrl"),imagePreviewWrap:q("imagePreviewWrap"),imagePreview:q("imagePreview"),removeImageBtn:q("removeImageBtn"),description:q("description"),addVariantBtn:q("addVariantBtn"),variantList:q("variantList"),basePriceField:q("basePriceField"),baseExpiryField:q("baseExpiryField"),baseWarehouseField:q("baseWarehouseField"),baseStatusFields:q("baseStatusFields"),baseImageField:q("baseImageField"),saveProductBtn:q("saveProductBtn"),toast:q("toast")};
 function q(id){return document.getElementById(id)}
 let products=[],categories=[],productVariants=[],variantEditorState=[],variantKeyCounter=1,previewObjectUrl="",imageMarkedForRemoval=false,categoryDbAvailable=true;
 const DEFAULT_CATEGORIES=["肉品","海鮮","火鍋料","早餐／麵食","點心／甜點","其他"],LOCAL_CATEGORY_KEY="joinbuy_frozen_categories_v1";
@@ -109,7 +151,7 @@ function buildCategoryFilter(){const cur=els.categoryFilter.value,n=getAllCatego
 function buildProductCategoryOptions(sel=""){const n=getAllCategories();els.productCategory.innerHTML='<option value="">請選擇</option>';n.forEach(x=>els.productCategory.add(new Option(x,x)));els.productCategory.add(new Option("＋ 新增分類","__new__"));if(n.includes(sel))els.productCategory.value=sel}
 function updateSummary(){els.totalCount.textContent=products.length;els.stockCount.textContent=products.filter(x=>getProductDisplayInfo(x).stockStatus==="in_stock").length;els.unlistedCount.textContent=products.filter(x=>getProductDisplayInfo(x).listingStatus==="unlisted").length}
 
-function renderCategoryManager(){const n=getAllCategories();if(!n.length){els.categoryList.innerHTML='<span style="color:var(--muted);font-size:12px">目前尚未建立分類</span>';return}els.categoryList.innerHTML=n.map((name,i)=>{const r=findCategoryRecord(name);return`<div class="category-chip"><span class="category-chip-name">${escapeHtml(name)}</span>${r?`<button type="button" ${i>0?"":"disabled"} onclick="moveCategory(${r.id},-1)">↑</button><button type="button" ${i<categories.length-1?"":"disabled"} onclick="moveCategory(${r.id},1)">↓</button>`:""}<button type="button" onclick='renameCategory(${JSON.stringify(name)})'>修改</button><button type="button" class="cat-delete" onclick='deleteCategory(${JSON.stringify(name)})'>刪除</button></div>`}).join("")}
+function renderCategoryManager(){const n=getAllCategories();els.categoryCountText.textContent=`${n.length} 個分類`;if(!n.length){els.categoryList.innerHTML='<span style="color:var(--muted);font-size:12px">目前尚未建立分類</span>';return}els.categoryList.innerHTML=n.map((name,i)=>{const r=findCategoryRecord(name);return`<div class="category-chip"><span class="category-chip-name">${escapeHtml(name)}</span>${r?`<button type="button" ${i>0?"":"disabled"} onclick="moveCategory(${r.id},-1)">↑</button><button type="button" ${i<categories.length-1?"":"disabled"} onclick="moveCategory(${r.id},1)">↓</button>`:""}<button type="button" onclick='renameCategory(${JSON.stringify(name)})'>修改</button><button type="button" class="cat-delete" onclick='deleteCategory(${JSON.stringify(name)})'>刪除</button></div>`}).join("")}
 function refreshCategoryUI(){renderCategoryManager();buildCategoryFilter();buildProductCategoryOptions();renderProducts()}
 async function addCategory(){const name=(prompt("請輸入新的分類名稱：")||"").trim();if(!name)return;if(getAllCategories().includes(name)){toast("這個分類已經存在");return}const sort=categories.length?Math.max(...categories.map(x=>Number(x.sort_order||0)))+1:1;if(categoryDbAvailable){const{error}=await db.from("categories").insert({name,sort_order:sort});if(!error){toast(`已新增分類「${name}」`);return loadAllData()}categoryDbAvailable=false}const n=getAllCategories();n.push(name);saveLocalCategoryNames(n);categories=makeLocalCategoryRecords([...new Set(n)]);refreshCategoryUI();toast(`已新增分類「${name}」`)}
 window.renameCategory=async oldName=>{const newName=(prompt("修改分類名稱：",oldName)||"").trim();if(!newName||newName===oldName)return;if(getAllCategories().includes(newName)){toast("這個分類名稱已經存在");return}const affected=products.filter(x=>x.category===oldName).length;if(affected&&!confirm(`目前有 ${affected} 項商品使用「${oldName}」。\n\n修改後會一起變更，確定嗎？`))return;const r=findCategoryRecord(oldName);if(r&&!r._local&&categoryDbAvailable){const{error}=await db.from("categories").update({name:newName}).eq("id",r.id);if(error)return toast("修改分類失敗："+error.message)}if(affected){const{error}=await db.from("products").update({category:newName}).eq("category",oldName);if(error)return toast("商品分類同步失敗："+error.message)}toast("分類修改完成");await loadAllData()}
@@ -156,6 +198,36 @@ els.variantList.addEventListener("click",e=>{const b=e.target.closest("button"),
 els.productCategory.addEventListener("change",()=>{const n=els.productCategory.value==="__new__";els.customCategory.classList.toggle("hidden",!n);els.customCategory.required=n});
 els.addCategoryBtn.addEventListener("click",addCategory);els.addBtn.addEventListener("click",openAddModal);els.refreshBtn.addEventListener("click",loadProducts);els.closeModalBtn.addEventListener("click",closeModal);els.cancelModalBtn.addEventListener("click",closeModal);els.productModal.addEventListener("click",e=>{if(e.target===els.productModal)closeModal()});
 ["searchInput","categoryFilter","listingFilter","expiryFilter"].forEach(id=>els[id].addEventListener(id==="searchInput"?"input":"change",renderProducts));
+
+function toggleCategoryManager(forceOpen=null){
+  const shouldOpen = forceOpen === null
+    ? els.categoryManager.classList.contains("collapsed")
+    : forceOpen;
+
+  els.categoryManager.classList.toggle("collapsed", !shouldOpen);
+  els.categoryManagerToggle.setAttribute(
+    "aria-expanded",
+    shouldOpen ? "true" : "false"
+  );
+}
+
+els.categoryManagerToggle.addEventListener("click", event => {
+  if (event.target.closest("#addCategoryBtn")) return;
+  toggleCategoryManager();
+});
+
+els.categoryManagerToggle.addEventListener("keydown", event => {
+  if (event.key === "Enter" || event.key === " ") {
+    if (event.target.closest("#addCategoryBtn")) return;
+    event.preventDefault();
+    toggleCategoryManager();
+  }
+});
+
+els.addCategoryBtn.addEventListener("click", () => {
+  toggleCategoryManager(true);
+});
+
 db.auth.onAuthStateChange((_e,s)=>{if(s?.user)showAdmin(s.user)});
 checkSession();
 </script>
