@@ -614,7 +614,10 @@ els.categorySelect.addEventListener(
 
 els.refresh.addEventListener(
   'click',
-  loadProducts
+  () => {
+    loadActivity();
+    loadProducts();
+  }
 );
 
 els.retry.addEventListener(
@@ -654,4 +657,79 @@ document.addEventListener(
   }
 );
 
+async function loadActivity(){
+  const activitySection =
+    document.getElementById('activitySection');
+
+  const activityBadge =
+    document.getElementById('activityBadge');
+
+  const activityTitle =
+    document.getElementById('activityTitle');
+
+  const activityDescription =
+    document.getElementById('activityDescription');
+
+  if(!activitySection){
+    return;
+  }
+
+  const { data, error } =
+    await client
+      .from('site_activity')
+      .select(
+        'enabled,badge,title,description,start_date,end_date'
+      )
+      .eq('id', 1)
+      .maybeSingle();
+
+  if(error || !data){
+    activitySection.classList.add('hidden');
+    return;
+  }
+
+const now = new Date();
+
+const today =
+  `${now.getFullYear()}-` +
+  `${String(now.getMonth() + 1).padStart(2, '0')}-` +
+  `${String(now.getDate()).padStart(2, '0')}`;
+
+  const started =
+    !data.start_date ||
+    today >= data.start_date;
+
+  const notEnded =
+    !data.end_date ||
+    today <= data.end_date;
+
+  const shouldShow =
+    data.enabled === true &&
+    started &&
+    notEnded;
+
+  if(!shouldShow){
+    activitySection.classList.add('hidden');
+    return;
+  }
+
+  if(activityBadge){
+    activityBadge.textContent =
+      data.badge || '🎉 最新活動';
+  }
+
+  if(activityTitle){
+    activityTitle.textContent =
+      data.title || '揪愛買活動專區';
+  }
+
+  if(activityDescription){
+    activityDescription.textContent =
+      data.description || '';
+  }
+
+  activitySection.classList.remove('hidden');
+}
+
+loadActivity();
 loadProducts();
