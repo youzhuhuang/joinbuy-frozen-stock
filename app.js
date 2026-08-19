@@ -674,6 +674,26 @@ async function loadActivity(){
     return;
   }
 
+  // 沒有活動時，恢復原本首頁內容
+  function showDefaultActivity(){
+    if(activityBadge){
+      activityBadge.textContent =
+        '❄️ 新鮮冷凍・現貨供應';
+    }
+
+    if(activityTitle){
+      activityTitle.textContent =
+        '今天想吃什麼？';
+    }
+
+    if(activityDescription){
+      activityDescription.textContent =
+        '商品依門市實際庫存為主，售完為止。';
+    }
+
+    activitySection.classList.remove('hidden');
+  }
+
   const { data, error } =
     await client
       .from('site_activity')
@@ -683,17 +703,20 @@ async function loadActivity(){
       .eq('id', 1)
       .maybeSingle();
 
+  // 資料讀取失敗或沒有活動資料
+  // → 顯示原本首頁內容
   if(error || !data){
-    activitySection.classList.add('hidden');
+    showDefaultActivity();
     return;
   }
 
-const now = new Date();
+  // 使用台灣／手機目前的本地日期
+  const now = new Date();
 
-const today =
-  `${now.getFullYear()}-` +
-  `${String(now.getMonth() + 1).padStart(2, '0')}-` +
-  `${String(now.getDate()).padStart(2, '0')}`;
+  const today =
+    `${now.getFullYear()}-` +
+    `${String(now.getMonth() + 1).padStart(2, '0')}-` +
+    `${String(now.getDate()).padStart(2, '0')}`;
 
   const started =
     !data.start_date ||
@@ -703,16 +726,20 @@ const today =
     !data.end_date ||
     today <= data.end_date;
 
-  const shouldShow =
+  const shouldShowActivity =
     data.enabled === true &&
     started &&
     notEnded;
 
-  if(!shouldShow){
-    activitySection.classList.add('hidden');
+  // 沒開活動、尚未開始、或已經結束
+  // → 顯示原本「今天想吃什麼？」
+  if(!shouldShowActivity){
+    showDefaultActivity();
     return;
   }
 
+  // 有活動而且日期符合
+  // → 顯示後台設定的活動
   if(activityBadge){
     activityBadge.textContent =
       data.badge || '🎉 最新活動';
