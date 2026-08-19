@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#4d2f18">
 <title>揪愛買｜商品管理後台</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">const activityManager=document.getElementById("activityManager"),activityManagerToggle=document.getElementById("activityManagerToggle");function toggleActivityManager(){if(!activityManager||!activityManagerToggle)return;const o=activityManager.classList.contains("collapsed");activityManager.classList.toggle("collapsed",!o);activityManagerToggle.setAttribute("aria-expanded",String(o))}activityManagerToggle?.addEventListener("click",toggleActivityManager);activityManagerToggle?.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toggleActivityManager()}});</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--bg:#f7f1e8;--panel:#fffdf9;--line:#e7d8c5;--brown:#4d2f18;--brown2:#765034;--muted:#817367;--green:#5e8b45;--green-bg:#e8f2df;--orange:#c86c29;--orange-bg:#fff0df;--red:#b84f45;--red-bg:#fbe8e5;--gray:#777;--gray-bg:#efefed;--shadow:0 10px 30px rgba(77,47,24,.08)}
 *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#fbf8f2,#f7f1e8);color:#292019;font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif}button,input,select,textarea{font:inherit}.hidden{display:none!important}
@@ -163,7 +163,7 @@ const SUPABASE_KEY="sb_publishable_3npPxEjVJEr6zL0DodRoIQ_MTu4TPy0";
 const STORAGE_BUCKET="product-images";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-const els={loginView:q("loginView"),adminView:q("adminView"),loginForm:q("loginForm"),email:q("email"),password:q("password"),loginBtn:q("loginBtn"),loginError:q("loginError"),logoutBtn:q("logoutBtn"),adminEmail:q("adminEmail"),refreshBtn:q("refreshBtn"),addBtn:q("addBtn"),addCategoryBtn:q("addCategoryBtn"),categoryManager:q("categoryManager"),categoryManagerToggle:q("categoryManagerToggle"),categoryCountText:q("categoryCountText"),categoryList:q("categoryList"),totalCount:q("totalCount"),stockCount:q("stockCount"),unlistedCount:q("unlistedCount"),activityForm:q("activityForm"),activityAdminStatus:q("activityAdminStatus"),activityEnabled:q("activityEnabled"),activityBadgeInput:q("activityBadgeInput"),activityTitleInput:q("activityTitleInput"),activityDescriptionInput:q("activityDescriptionInput"),activityStartDate:q("activityStartDate"),activityEndDate:q("activityEndDate"),saveActivityBtn:q("saveActivityBtn"),activityAdminHelp:q("activityAdminHelp"),searchInput:q("searchInput"),categoryFilter:q("categoryFilter"),listingFilter:q("listingFilter"),expiryFilter:q("expiryFilter"),loadingState:q("loadingState"),emptyState:q("emptyState"),tableWrap:q("tableWrap"),productBody:q("productBody"),productModal:q("productModal"),modalTitle:q("modalTitle"),closeModalBtn:q("closeModalBtn"),cancelModalBtn:q("cancelModalBtn"),productForm:q("productForm"),productId:q("productId"),productName:q("productName"),productCategory:q("productCategory"),customCategory:q("customCategory"),productPrice:q("productPrice"),productSpec:q("productSpec"),expiryDate:q("expiryDate"),productWarehouse:q("productWarehouse"),stockStatus:q("stockStatus"),listingStatus:q("listingStatus"),imageFile:q("imageFile"),currentImageUrl:q("currentImageUrl"),imagePreviewWrap:q("imagePreviewWrap"),imagePreview:q("imagePreview"),removeImageBtn:q("removeImageBtn"),description:q("description"),addVariantBtn:q("addVariantBtn"),variantList:q("variantList"),basePriceField:q("basePriceField"),baseExpiryField:q("baseExpiryField"),baseWarehouseField:q("baseWarehouseField"),baseStatusFields:q("baseStatusFields"),baseImageField:q("baseImageField"),saveProductBtn:q("saveProductBtn"),toast:q("toast")};
+const els={loginView:q("loginView"),adminView:q("adminView"),loginForm:q("loginForm"),email:q("email"),password:q("password"),loginBtn:q("loginBtn"),loginError:q("loginError"),logoutBtn:q("logoutBtn"),adminEmail:q("adminEmail"),refreshBtn:q("refreshBtn"),addBtn:q("addBtn"),addCategoryBtn:q("addCategoryBtn"),categoryManager:q("categoryManager"),categoryManagerToggle:q("categoryManagerToggle"),categoryCountText:q("categoryCountText"),categoryList:q("categoryList"),totalCount:q("totalCount"),stockCount:q("stockCount"),unlistedCount:q("unlistedCount"),activityManager:q("activityManager"),activityManagerToggle:q("activityManagerToggle"),activityForm:q("activityForm"),activityAdminStatus:q("activityAdminStatus"),activityEnabled:q("activityEnabled"),activityBadgeInput:q("activityBadgeInput"),activityTitleInput:q("activityTitleInput"),activityDescriptionInput:q("activityDescriptionInput"),activityStartDate:q("activityStartDate"),activityEndDate:q("activityEndDate"),saveActivityBtn:q("saveActivityBtn"),activityAdminHelp:q("activityAdminHelp"),searchInput:q("searchInput"),categoryFilter:q("categoryFilter"),listingFilter:q("listingFilter"),expiryFilter:q("expiryFilter"),loadingState:q("loadingState"),emptyState:q("emptyState"),tableWrap:q("tableWrap"),productBody:q("productBody"),productModal:q("productModal"),modalTitle:q("modalTitle"),closeModalBtn:q("closeModalBtn"),cancelModalBtn:q("cancelModalBtn"),productForm:q("productForm"),productId:q("productId"),productName:q("productName"),productCategory:q("productCategory"),customCategory:q("customCategory"),productPrice:q("productPrice"),productSpec:q("productSpec"),expiryDate:q("expiryDate"),productWarehouse:q("productWarehouse"),stockStatus:q("stockStatus"),listingStatus:q("listingStatus"),imageFile:q("imageFile"),currentImageUrl:q("currentImageUrl"),imagePreviewWrap:q("imagePreviewWrap"),imagePreview:q("imagePreview"),removeImageBtn:q("removeImageBtn"),description:q("description"),addVariantBtn:q("addVariantBtn"),variantList:q("variantList"),basePriceField:q("basePriceField"),baseExpiryField:q("baseExpiryField"),baseWarehouseField:q("baseWarehouseField"),baseStatusFields:q("baseStatusFields"),baseImageField:q("baseImageField"),saveProductBtn:q("saveProductBtn"),toast:q("toast")};
 function q(id){return document.getElementById(id)}
 let products=[],categories=[],productVariants=[],variantEditorState=[],variantKeyCounter=1,previewObjectUrl="",imageMarkedForRemoval=false,categoryDbAvailable=true;
 const DEFAULT_CATEGORIES=["肉品","海鮮","火鍋料","早餐／麵食","點心／甜點","其他"],LOCAL_CATEGORY_KEY="joinbuy_frozen_categories_v1";
@@ -326,6 +326,30 @@ els.categoryManagerToggle.addEventListener("keydown", event => {
 
 els.addCategoryBtn.addEventListener("click", () => {
   toggleCategoryManager(true);
+});
+
+
+// 客人端活動管理：展開／收合
+function toggleActivityManager(forceOpen = null) {
+  if (!els.activityManager || !els.activityManagerToggle) return;
+
+  const shouldOpen = forceOpen === null
+    ? els.activityManager.classList.contains("collapsed")
+    : forceOpen;
+
+  els.activityManager.classList.toggle("collapsed", !shouldOpen);
+  els.activityManagerToggle.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
+}
+
+els.activityManagerToggle?.addEventListener("click", () => {
+  toggleActivityManager();
+});
+
+els.activityManagerToggle?.addEventListener("keydown", event => {
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    toggleActivityManager();
+  }
 });
 
 db.auth.onAuthStateChange((_e,s)=>{if(s?.user)showAdmin(s.user)});
