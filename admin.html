@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#4d2f18">
 <title>揪愛買｜商品管理後台</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">const activityManager=document.getElementById("activityManager"),activityManagerToggle=document.getElementById("activityManagerToggle");function toggleActivityManager(){if(!activityManager||!activityManagerToggle)return;const o=activityManager.classList.contains("collapsed");activityManager.classList.toggle("collapsed",!o);activityManagerToggle.setAttribute("aria-expanded",String(o))}activityManagerToggle?.addEventListener("click",toggleActivityManager);activityManagerToggle?.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toggleActivityManager()}});</script>
 <style>
 :root{--bg:#f7f1e8;--panel:#fffdf9;--line:#e7d8c5;--brown:#4d2f18;--brown2:#765034;--muted:#817367;--green:#5e8b45;--green-bg:#e8f2df;--orange:#c86c29;--orange-bg:#fff0df;--red:#b84f45;--red-bg:#fbe8e5;--gray:#777;--gray-bg:#efefed;--shadow:0 10px 30px rgba(77,47,24,.08)}
 *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#fbf8f2,#f7f1e8);color:#292019;font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif}button,input,select,textarea{font:inherit}.hidden{display:none!important}
@@ -69,7 +69,7 @@
 .activity-help{margin-top:8px;color:var(--muted);font-size:10px;line-height:1.5}
 
 @media(max-width:620px){.summary{grid-template-columns:repeat(3,1fr)}.summary-card{padding:11px}.summary-card strong{font-size:20px}.grid2{grid-template-columns:1fr}.head-actions{width:100%}.head-actions .btn{flex:1}.toolbar select{flex:1 1 calc(50% - 8px)}}
-</style>
+.activity-manager-head{cursor:pointer;user-select:none}.activity-manager-title-wrap{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px}.activity-collapse-meta{display:flex;align-items:center;gap:8px}.activity-collapse-arrow{display:inline-block;color:var(--brown2);font-size:20px;font-weight:900;transition:transform .2s ease}.activity-manager.collapsed .activity-manager-body{display:none}.activity-manager.collapsed .activity-collapse-arrow{transform:rotate(-90deg)}.activity-manager:not(.collapsed) .activity-collapse-arrow{transform:rotate(0deg)}</style>
 </head>
 <body>
 <header class="topbar"><div class="top-inner"><div class="brand"><div class="logo">🛒</div><div><h1>揪愛買</h1><p>冷凍現貨管理後台</p></div></div><button id="logoutBtn" class="btn hidden">登出</button></div></header>
@@ -92,11 +92,11 @@
     <div id="categoryList" class="category-list"></div>
   </div>
 </div>
-<div class="card activity-manager">
-  <div class="activity-manager-head">
-    <h3>🎉 客人端活動管理</h3>
-    <span id="activityAdminStatus" class="activity-status">讀取中</span>
+<div id="activityManager" class="card activity-manager collapsed">
+  <div id="activityManagerToggle" class="activity-manager-head" role="button" tabindex="0" aria-expanded="false">
+    <div class="activity-manager-title-wrap"><h3>🎉 客人端活動管理</h3><div class="collapse-meta activity-collapse-meta"><span id="activityAdminStatus" class="activity-status">讀取中</span><span class="activity-collapse-arrow">⌄</span></div></div>
   </div>
+  <div class="activity-manager-body">
   <form id="activityForm">
     <div class="activity-switch-row">
       <label for="activityEnabled">顯示活動專區</label>
@@ -128,7 +128,7 @@
       <button id="saveActivityBtn" class="btn btn-add" type="submit">儲存活動</button>
     </div>
     <div id="activityAdminHelp" class="activity-help">啟用後，客人端首頁上方會顯示此活動；有設定日期時，只會在活動期間顯示。</div>
-  </form>
+  </form></div>
 </div>
 <div class="summary"><div class="summary-card"><small>全部商品</small><strong id="totalCount">0</strong></div><div class="summary-card"><small>尚有庫存</small><strong id="stockCount">0</strong></div><div class="summary-card"><small>已下架</small><strong id="unlistedCount">0</strong></div></div>
 <div class="card toolbar">
