@@ -53,6 +53,21 @@
 .image-upload{border:1px dashed #cdb394;background:#fbf6ef;border-radius:14px;padding:12px}.image-picker{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.image-file{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}.image-pick-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:#fff;color:var(--brown);border-radius:10px;padding:10px 13px;font-weight:800;cursor:pointer}.image-help{color:var(--muted);font-size:11px;line-height:1.5;flex:1 1 180px}.image-preview-wrap{margin-top:11px;display:flex;align-items:flex-start;gap:10px}.image-preview{width:112px;height:112px;object-fit:cover;border-radius:13px;border:1px solid var(--line);background:#efe4d5}.remove-image-btn{border:1px solid #edc9c5;background:#fff;color:var(--red);border-radius:9px;padding:8px 10px;font-weight:800;font-size:11px;cursor:pointer}
 .variant-section{margin-top:16px;padding:14px;border:1px solid var(--line);border-radius:16px;background:#fbf6ef}.variant-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px}.variant-section-head h4{margin:0;color:var(--brown);font-size:15px}.variant-note{color:var(--muted);font-size:11px;line-height:1.6;margin-bottom:10px}.variant-list{display:grid;gap:10px}.variant-card{border:1px solid var(--line);background:#fff;border-radius:14px;padding:12px}.variant-card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.variant-card-title{color:var(--brown2);font-weight:900;font-size:12px}.variant-remove{border:1px solid #edc9c5;background:var(--red-bg);color:var(--red);border-radius:8px;padding:6px 8px;font-size:11px;font-weight:800;cursor:pointer}.variant-empty{padding:10px 0 2px;color:var(--muted);font-size:11px}.variant-tag{display:inline-block;margin-top:4px;padding:4px 7px;border-radius:7px;background:#f6eee5;color:var(--brown2);font-size:10px;font-weight:800}
 .toast{position:fixed;left:50%;bottom:25px;z-index:100;transform:translateX(-50%);width:min(400px,calc(100% - 30px));background:#2d241e;color:#fff;border-radius:12px;padding:12px 15px;font-size:12px;box-shadow:0 12px 35px rgba(0,0,0,.22)}
+
+/* ACTIVITY MANAGEMENT */
+.activity-manager{padding:14px;margin-bottom:14px}
+.activity-manager-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.activity-manager-head h3{margin:0;color:var(--brown);font-size:16px}
+.activity-status{font-size:11px;font-weight:800;padding:5px 8px;border-radius:8px;background:var(--gray-bg);color:var(--gray)}
+.activity-status.on{background:var(--green-bg);color:var(--green)}
+.activity-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.activity-manager textarea{min-height:76px}
+.activity-switch-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0}
+.activity-switch-row label{font-size:12px;font-weight:800;color:var(--brown2)}
+.activity-switch-row input{width:20px;height:20px}
+.activity-actions{display:flex;justify-content:flex-end;margin-top:4px}
+.activity-help{margin-top:8px;color:var(--muted);font-size:10px;line-height:1.5}
+
 @media(max-width:620px){.summary{grid-template-columns:repeat(3,1fr)}.summary-card{padding:11px}.summary-card strong{font-size:20px}.grid2{grid-template-columns:1fr}.head-actions{width:100%}.head-actions .btn{flex:1}.toolbar select{flex:1 1 calc(50% - 8px)}}
 </style>
 </head>
@@ -77,11 +92,49 @@
     <div id="categoryList" class="category-list"></div>
   </div>
 </div>
+<div class="card activity-manager">
+  <div class="activity-manager-head">
+    <h3>🎉 客人端活動管理</h3>
+    <span id="activityAdminStatus" class="activity-status">讀取中</span>
+  </div>
+  <form id="activityForm">
+    <div class="activity-switch-row">
+      <label for="activityEnabled">顯示活動專區</label>
+      <input id="activityEnabled" type="checkbox">
+    </div>
+    <div class="field">
+      <label>活動小標</label>
+      <input id="activityBadgeInput" maxlength="40" placeholder="例如：🎉 本週活動">
+    </div>
+    <div class="field">
+      <label>活動標題 *</label>
+      <input id="activityTitleInput" maxlength="80" placeholder="例如：冷凍現貨滿額贈" required>
+    </div>
+    <div class="field">
+      <label>活動內容</label>
+      <textarea id="activityDescriptionInput" maxlength="500" placeholder="例如：冷凍現貨單筆滿 $199 贈黃金乳酪蛋腸乙包"></textarea>
+    </div>
+    <div class="activity-form-grid">
+      <div class="field">
+        <label>開始日期</label>
+        <input id="activityStartDate" type="date">
+      </div>
+      <div class="field">
+        <label>結束日期</label>
+        <input id="activityEndDate" type="date">
+      </div>
+    </div>
+    <div class="activity-actions">
+      <button id="saveActivityBtn" class="btn btn-add" type="submit">儲存活動</button>
+    </div>
+    <div id="activityAdminHelp" class="activity-help">啟用後，客人端首頁上方會顯示此活動；有設定日期時，只會在活動期間顯示。</div>
+  </form>
+</div>
 <div class="summary"><div class="summary-card"><small>全部商品</small><strong id="totalCount">0</strong></div><div class="summary-card"><small>尚有庫存</small><strong id="stockCount">0</strong></div><div class="summary-card"><small>已下架</small><strong id="unlistedCount">0</strong></div></div>
 <div class="card toolbar">
 <input id="searchInput" type="search" placeholder="搜尋商品名稱">
 <select id="categoryFilter"><option value="">全部分類</option></select>
-<select id="listingFilter"><option value="">全部狀態</option><option value="listed">上架中</option><option value="unlisted">已下架</option></select>
+<select id="listingFilter"><option value="">全部狀態</option><option value="listed">上架中</option><option value="unlisted">已下架</option><option value="in_stock">尚有庫存</option><option value="sold_out">庫存已售完</option></select>
 <select id="expiryFilter"><option value="">全部效期</option><option value="expired">已過效期</option><option value="urgent">7 天內到期</option><option value="soon">8～30 天內到期</option><option value="normal">31 天以上</option><option value="unset">未設定效期</option></select>
 </div>
 <div id="loadingState" class="card state"><div class="icon">⏳</div><h3>讀取商品中</h3><p>正在取得最新商品資料...</p></div>
@@ -110,7 +163,7 @@ const SUPABASE_KEY="sb_publishable_3npPxEjVJEr6zL0DodRoIQ_MTu4TPy0";
 const STORAGE_BUCKET="product-images";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-const els={loginView:q("loginView"),adminView:q("adminView"),loginForm:q("loginForm"),email:q("email"),password:q("password"),loginBtn:q("loginBtn"),loginError:q("loginError"),logoutBtn:q("logoutBtn"),adminEmail:q("adminEmail"),refreshBtn:q("refreshBtn"),addBtn:q("addBtn"),addCategoryBtn:q("addCategoryBtn"),categoryManager:q("categoryManager"),categoryManagerToggle:q("categoryManagerToggle"),categoryCountText:q("categoryCountText"),categoryList:q("categoryList"),totalCount:q("totalCount"),stockCount:q("stockCount"),unlistedCount:q("unlistedCount"),searchInput:q("searchInput"),categoryFilter:q("categoryFilter"),listingFilter:q("listingFilter"),expiryFilter:q("expiryFilter"),loadingState:q("loadingState"),emptyState:q("emptyState"),tableWrap:q("tableWrap"),productBody:q("productBody"),productModal:q("productModal"),modalTitle:q("modalTitle"),closeModalBtn:q("closeModalBtn"),cancelModalBtn:q("cancelModalBtn"),productForm:q("productForm"),productId:q("productId"),productName:q("productName"),productCategory:q("productCategory"),customCategory:q("customCategory"),productPrice:q("productPrice"),productSpec:q("productSpec"),expiryDate:q("expiryDate"),productWarehouse:q("productWarehouse"),stockStatus:q("stockStatus"),listingStatus:q("listingStatus"),imageFile:q("imageFile"),currentImageUrl:q("currentImageUrl"),imagePreviewWrap:q("imagePreviewWrap"),imagePreview:q("imagePreview"),removeImageBtn:q("removeImageBtn"),description:q("description"),addVariantBtn:q("addVariantBtn"),variantList:q("variantList"),basePriceField:q("basePriceField"),baseExpiryField:q("baseExpiryField"),baseWarehouseField:q("baseWarehouseField"),baseStatusFields:q("baseStatusFields"),baseImageField:q("baseImageField"),saveProductBtn:q("saveProductBtn"),toast:q("toast")};
+const els={loginView:q("loginView"),adminView:q("adminView"),loginForm:q("loginForm"),email:q("email"),password:q("password"),loginBtn:q("loginBtn"),loginError:q("loginError"),logoutBtn:q("logoutBtn"),adminEmail:q("adminEmail"),refreshBtn:q("refreshBtn"),addBtn:q("addBtn"),addCategoryBtn:q("addCategoryBtn"),categoryManager:q("categoryManager"),categoryManagerToggle:q("categoryManagerToggle"),categoryCountText:q("categoryCountText"),categoryList:q("categoryList"),totalCount:q("totalCount"),stockCount:q("stockCount"),unlistedCount:q("unlistedCount"),activityForm:q("activityForm"),activityAdminStatus:q("activityAdminStatus"),activityEnabled:q("activityEnabled"),activityBadgeInput:q("activityBadgeInput"),activityTitleInput:q("activityTitleInput"),activityDescriptionInput:q("activityDescriptionInput"),activityStartDate:q("activityStartDate"),activityEndDate:q("activityEndDate"),saveActivityBtn:q("saveActivityBtn"),activityAdminHelp:q("activityAdminHelp"),searchInput:q("searchInput"),categoryFilter:q("categoryFilter"),listingFilter:q("listingFilter"),expiryFilter:q("expiryFilter"),loadingState:q("loadingState"),emptyState:q("emptyState"),tableWrap:q("tableWrap"),productBody:q("productBody"),productModal:q("productModal"),modalTitle:q("modalTitle"),closeModalBtn:q("closeModalBtn"),cancelModalBtn:q("cancelModalBtn"),productForm:q("productForm"),productId:q("productId"),productName:q("productName"),productCategory:q("productCategory"),customCategory:q("customCategory"),productPrice:q("productPrice"),productSpec:q("productSpec"),expiryDate:q("expiryDate"),productWarehouse:q("productWarehouse"),stockStatus:q("stockStatus"),listingStatus:q("listingStatus"),imageFile:q("imageFile"),currentImageUrl:q("currentImageUrl"),imagePreviewWrap:q("imagePreviewWrap"),imagePreview:q("imagePreview"),removeImageBtn:q("removeImageBtn"),description:q("description"),addVariantBtn:q("addVariantBtn"),variantList:q("variantList"),basePriceField:q("basePriceField"),baseExpiryField:q("baseExpiryField"),baseWarehouseField:q("baseWarehouseField"),baseStatusFields:q("baseStatusFields"),baseImageField:q("baseImageField"),saveProductBtn:q("saveProductBtn"),toast:q("toast")};
 function q(id){return document.getElementById(id)}
 let products=[],categories=[],productVariants=[],variantEditorState=[],variantKeyCounter=1,previewObjectUrl="",imageMarkedForRemoval=false,categoryDbAvailable=true;
 const DEFAULT_CATEGORIES=["肉品","海鮮","火鍋料","早餐／麵食","點心／甜點","其他"],LOCAL_CATEGORY_KEY="joinbuy_frozen_categories_v1";
@@ -128,7 +181,7 @@ function formatDateOnly(v){const d=parseDateOnly(v);return d?`${d.getFullYear()}
 function getExpiryInfo(v){const e=parseDateOnly(v);if(!e)return{text:"未設定",cls:"expiry-normal",days:null};const n=new Date(),t=new Date(n.getFullYear(),n.getMonth(),n.getDate()),diff=Math.ceil((e-t)/86400000);if(diff<0)return{text:"已過效期",cls:"expiry-expired",days:diff};if(diff<=7)return{text:diff===0?"今日到期・優先出清":`剩 ${diff} 天・優先出清`,cls:"expiry-urgent",days:diff};if(diff<=30)return{text:`即將到期・剩 ${diff} 天`,cls:"expiry-soon",days:diff};return{text:"效期正常",cls:"expiry-normal",days:diff}}
 
 function showLogin(){els.loginView.classList.remove("hidden");els.adminView.classList.add("hidden");els.logoutBtn.classList.add("hidden")}
-function showAdmin(u){els.loginView.classList.add("hidden");els.adminView.classList.remove("hidden");els.logoutBtn.classList.remove("hidden");els.adminEmail.textContent=u?.email?"登入帳號："+u.email:"管理員";loadAllData()}
+function showAdmin(u){els.loginView.classList.add("hidden");els.adminView.classList.remove("hidden");els.logoutBtn.classList.remove("hidden");els.adminEmail.textContent=u?.email?"登入帳號："+u.email:"管理員";loadAllData();loadActivityAdmin()}
 async function checkSession(){const{data:{session}}=await db.auth.getSession();session?.user?showAdmin(session.user):showLogin()}
 els.loginForm.addEventListener("submit",async e=>{e.preventDefault();els.loginBtn.disabled=true;els.loginBtn.textContent="登入中...";els.loginError.classList.add("hidden");const{data,error}=await db.auth.signInWithPassword({email:els.email.value.trim(),password:els.password.value});els.loginBtn.disabled=false;els.loginBtn.textContent="登入管理後台";if(error){els.loginError.textContent="登入失敗："+error.message;els.loginError.classList.remove("hidden");return}els.password.value="";showAdmin(data.user)});
 els.logoutBtn.addEventListener("click",async()=>{await db.auth.signOut();products=[];categories=[];productVariants=[];showLogin();toast("已登出管理後台")});
@@ -163,7 +216,7 @@ function getProductDisplayInfo(p){const v=getVariantsForProduct(p.id);if(!v.leng
 
 function getFilteredProducts(){
 const s=els.searchInput.value.trim().toLowerCase(),c=els.categoryFilter.value,l=els.listingFilter.value,e=els.expiryFilter.value;
-return products.filter(p=>{const d=getProductDisplayInfo(p),info=getExpiryInfo(d.expiryDate);const ms=!s||String(p.name||"").toLowerCase().includes(s)||String(p.spec||"").toLowerCase().includes(s),mc=!c||p.category===c,ml=!l||d.listingStatus===l;let me=true;if(e==="expired")me=info.days!==null&&info.days<0;else if(e==="urgent")me=info.days!==null&&info.days>=0&&info.days<=7;else if(e==="soon")me=info.days!==null&&info.days>=8&&info.days<=30;else if(e==="normal")me=info.days!==null&&info.days>=31;else if(e==="unset")me=info.days===null;return ms&&mc&&ml&&me})
+return products.filter(p=>{const d=getProductDisplayInfo(p),info=getExpiryInfo(d.expiryDate);const ms=!s||String(p.name||"").toLowerCase().includes(s)||String(p.spec||"").toLowerCase().includes(s),mc=!c||p.category===c,ml=!l||(l==="listed"||l==="unlisted"?d.listingStatus===l:d.stockStatus===l);let me=true;if(e==="expired")me=info.days!==null&&info.days<0;else if(e==="urgent")me=info.days!==null&&info.days>=0&&info.days<=7;else if(e==="soon")me=info.days!==null&&info.days>=8&&info.days<=30;else if(e==="normal")me=info.days!==null&&info.days>=31;else if(e==="unset")me=info.days===null;return ms&&mc&&ml&&me})
 }
 function renderProducts(){const list=getFilteredProducts();if(!list.length){els.tableWrap.classList.add("hidden");els.emptyState.classList.remove("hidden");return}els.emptyState.classList.add("hidden");els.tableWrap.classList.remove("hidden");els.productBody.innerHTML=list.map(p=>{const d=getProductDisplayInfo(p),u=d.variants.find(v=>v.image_url)?.image_url||p.image_url,img=u?`<img class="thumb" src="${escapeHtml(u)}">`:`<div class="thumb-fallback">${emojiMap[p.category]||"❄️"}</div>`,stock=d.stockStatus==="sold_out"?'<span class="badge badge-orange">庫存已售完</span>':'<span class="badge badge-green">尚有庫存</span>',listing=d.listingStatus==="unlisted"?'<span class="badge badge-gray">已下架</span>':'<span class="badge badge-green">上架中</span>',tag=d.variants.length?`<div class="variant-tag">${d.variants.length} 個口味／規格</div>`:"",ex=getExpiryInfo(d.expiryDate);return`<tr><td><div class="product-cell">${img}<div><div class="pname">${escapeHtml(p.name||"")}</div><div class="pspec">${escapeHtml(p.spec||"")}</div>${tag}</div></div></td><td>${escapeHtml(p.category||"")}</td><td class="price">${d.priceText}</td><td>${escapeHtml(d.warehouseText)}</td><td><div>${formatDateOnly(d.expiryDate)}</div><span class="expiry-badge ${ex.cls}">${ex.text}</span></td><td>${stock}</td><td>${listing}</td><td><div class="actions"><button class="small-btn edit-btn" onclick="editProduct(${p.id})">編輯</button><button class="small-btn delete-btn" onclick="deleteProduct(${p.id})">刪除</button></div></td></tr>`}).join("")}
 
@@ -196,8 +249,55 @@ els.variantList.addEventListener("input",e=>{const c=e.target.closest(".variant-
 els.variantList.addEventListener("change",e=>{const c=e.target.closest(".variant-card");if(!c)return;const x=variantEditorState.find(v=>v.key===c.dataset.key);if(!x)return;if(e.target.dataset.field){x[e.target.dataset.field]=e.target.value;return}if(e.target.dataset.action==="variant-file"){const f=e.target.files?.[0];if(!f)return;if(x.previewObjectUrl)URL.revokeObjectURL(x.previewObjectUrl);x.file=f;x.previewObjectUrl=URL.createObjectURL(f);x.imageMarkedForRemoval=false;renderVariantEditor()}});
 els.variantList.addEventListener("click",e=>{const b=e.target.closest("button"),c=b?.closest(".variant-card");if(!b||!c)return;const i=variantEditorState.findIndex(v=>v.key===c.dataset.key);if(i<0)return;const x=variantEditorState[i];if(b.dataset.action==="remove-variant"){if(confirm(`確定要移除「${x.variant_name||"這個口味／規格"}」嗎？`)){variantEditorState.splice(i,1);renderVariantEditor()}}else if(b.dataset.action==="remove-variant-image"){x.file=null;x.image_url="";x.previewObjectUrl="";x.imageMarkedForRemoval=true;renderVariantEditor()}});
 els.productCategory.addEventListener("change",()=>{const n=els.productCategory.value==="__new__";els.customCategory.classList.toggle("hidden",!n);els.customCategory.required=n});
-els.addCategoryBtn.addEventListener("click",addCategory);els.addBtn.addEventListener("click",openAddModal);els.refreshBtn.addEventListener("click",loadProducts);els.closeModalBtn.addEventListener("click",closeModal);els.cancelModalBtn.addEventListener("click",closeModal);els.productModal.addEventListener("click",e=>{if(e.target===els.productModal)closeModal()});
+els.addCategoryBtn.addEventListener("click",addCategory);els.addBtn.addEventListener("click",openAddModal);els.refreshBtn.addEventListener("click",()=>{loadProducts();loadActivityAdmin()});els.closeModalBtn.addEventListener("click",closeModal);els.cancelModalBtn.addEventListener("click",closeModal);els.productModal.addEventListener("click",e=>{if(e.target===els.productModal)closeModal()});
 ["searchInput","categoryFilter","listingFilter","expiryFilter"].forEach(id=>els[id].addEventListener(id==="searchInput"?"input":"change",renderProducts));
+
+
+async function loadActivityAdmin(){
+  const {data,error}=await db.from("site_activity").select("id,enabled,badge,title,description,start_date,end_date,updated_at").eq("id",1).maybeSingle();
+  if(error){
+    els.activityAdminStatus.textContent="需先建立資料表";
+    els.activityAdminStatus.classList.remove("on");
+    els.activityAdminHelp.textContent="請先在 Supabase SQL Editor 執行隨附的 setup_activity.sql，完成後按重新整理。";
+    els.saveActivityBtn.disabled=true;
+    return;
+  }
+  els.saveActivityBtn.disabled=false;
+  const a=data||{};
+  els.activityEnabled.checked=!!a.enabled;
+  els.activityBadgeInput.value=a.badge||"🎉 最新活動";
+  els.activityTitleInput.value=a.title||"揪愛買活動專區";
+  els.activityDescriptionInput.value=a.description||"";
+  els.activityStartDate.value=a.start_date||"";
+  els.activityEndDate.value=a.end_date||"";
+  els.activityAdminStatus.textContent=a.enabled?"顯示中":"未顯示";
+  els.activityAdminStatus.classList.toggle("on",!!a.enabled);
+}
+
+els.activityForm.addEventListener("submit",async event=>{
+  event.preventDefault();
+  const title=els.activityTitleInput.value.trim();
+  if(!title){toast("請輸入活動標題");return}
+  if(els.activityStartDate.value&&els.activityEndDate.value&&els.activityStartDate.value>els.activityEndDate.value){toast("活動結束日期不能早於開始日期");return}
+  els.saveActivityBtn.disabled=true;
+  els.saveActivityBtn.textContent="儲存中...";
+  const payload={
+    id:1,
+    enabled:els.activityEnabled.checked,
+    badge:els.activityBadgeInput.value.trim()||"🎉 最新活動",
+    title,
+    description:els.activityDescriptionInput.value.trim()||null,
+    start_date:els.activityStartDate.value||null,
+    end_date:els.activityEndDate.value||null,
+    updated_at:new Date().toISOString()
+  };
+  const {error}=await db.from("site_activity").upsert(payload,{onConflict:"id"});
+  els.saveActivityBtn.disabled=false;
+  els.saveActivityBtn.textContent="儲存活動";
+  if(error){toast("活動儲存失敗："+error.message);return}
+  toast("活動已儲存，客人端會同步更新");
+  await loadActivityAdmin();
+});
 
 function toggleCategoryManager(forceOpen=null){
   const shouldOpen = forceOpen === null
