@@ -229,8 +229,61 @@ function makeVariantState(d={}){return{key:`v${variantKeyCounter++}`,id:d.id||nu
 function syncBaseProductFieldsVisibility(){const h=variantEditorState.length>0;[els.basePriceField,els.baseExpiryField,els.baseWarehouseField,els.baseStatusFields,els.baseImageField].forEach(x=>x.classList.toggle("hidden",h));els.productPrice.required=!h;els.productWarehouse.required=!h}
 function renderVariantEditor(){syncBaseProductFieldsVisibility();if(!variantEditorState.length){els.variantList.innerHTML='<div class="variant-empty">此商品目前沒有口味／規格，會使用上方一般商品資料。</div>';return}els.variantList.innerHTML=variantEditorState.map((x,i)=>{const src=x.imageMarkedForRemoval?"":(x.previewObjectUrl||x.image_url||""),wh=warehouseOptions.map(n=>`<option value="${escapeHtml(n)}" ${x.warehouse===n?"selected":""}>${escapeHtml(n)}</option>`).join("");return`<div class="variant-card" data-key="${x.key}"><div class="variant-card-head"><div class="variant-card-title">口味／規格 ${i+1}</div><button class="variant-remove" type="button" data-action="remove-variant">刪除這個口味</button></div><div class="field"><label>口味／規格名稱 *</label><input data-field="variant_name" value="${escapeHtml(x.variant_name)}" required></div><div class="grid2"><div class="field"><label>售價 *</label><input data-field="price" type="number" min="0" value="${escapeHtml(x.price)}" required></div><div class="field"><label>商品效期</label><input data-field="expiry_date" type="date" value="${escapeHtml(x.expiry_date)}"></div></div><div class="field"><label>倉位 *</label><select data-field="warehouse" required><option value="">請選擇倉位</option>${wh}</select></div><div class="grid2"><div class="field"><label>庫存狀態 *</label><select data-field="stock_status"><option value="尚有庫存" ${x.stock_status==="尚有庫存"?"selected":""}>尚有庫存</option><option value="庫存已售完" ${x.stock_status==="庫存已售完"?"selected":""}>庫存已售完</option></select></div><div class="field"><label>上架狀態 *</label><select data-field="listing_status"><option value="上架" ${x.listing_status==="上架"?"selected":""}>上架</option><option value="下架" ${x.listing_status==="下架"?"selected":""}>下架</option></select></div></div><div class="field"><label>口味／規格圖片</label><div class="image-upload"><input id="vf-${x.key}" class="image-file" data-action="variant-file" type="file" accept="image/*"><label for="vf-${x.key}" class="image-pick-btn">📷 選擇圖片</label><div class="image-preview-wrap ${src?"":"hidden"}"><img class="image-preview" src="${escapeHtml(src)}"><button class="remove-image-btn" type="button" data-action="remove-variant-image">移除圖片</button></div></div></div></div>`}).join("")}
 function openAddModal(){els.modalTitle.textContent="新增商品";els.productForm.reset();els.productId.value="";buildProductCategoryOptions();resetImageField();clearVariantPreviewUrls();variantEditorState=[];renderVariantEditor();els.productModal.classList.remove("hidden")}
-function closeModal(){clearPreviewObjectUrl();clearVariantPreviewUrls();els.productModal.classList.add("hidden")}
-window.editProduct=id=>{const p=products.find(x=>x.id===id);if(!p)return;els.modalTitle.textContent="編輯商品";els.productId.value=p.id;els.productName.value=p.name||"";buildProductCategoryOptions(p.category||"");els.productPrice.value=p.price??0;els.productSpec.value=p.spec||"";els.expiryDate.value=p.expiry_date||"";els.productWarehouse.value=p.warehouse||"";els.stockStatus.value=p.stock_status||"in_stock";els.listingStatus.value=p.listing_status||"listed";els.currentImageUrl.value=p.image_url||"";p.image_url?showImagePreview(p.image_url):hideImagePreview();els.description.value=p.description||"";variantEditorState=getVariantsForProduct(p.id).map(makeVariantState);renderVariantEditor();els.productModal.classList.remove("hidden")}
+function closeModal(){
+  clearPreviewObjectUrl();
+  clearVariantPreviewUrls();
+
+  // 清除上一個商品選過的圖片
+  els.imageFile.value="";
+  imageMarkedForRemoval=false;
+
+  variantEditorState=[];
+
+  els.productModal.classList.add("hidden");
+}
+window.editProduct=id=>{
+  const p=products.find(x=>x.id===id);
+  if(!p)return;
+
+  // 每次開啟商品時，先清除上一個商品殘留的圖片
+  clearPreviewObjectUrl();
+  els.imageFile.value="";
+  imageMarkedForRemoval=false;
+
+  clearVariantPreviewUrls();
+  variantEditorState=[];
+
+  els.modalTitle.textContent="編輯商品";
+  els.productId.value=p.id;
+  els.productName.value=p.name||"";
+
+  buildProductCategoryOptions(p.category||"");
+
+  els.productPrice.value=p.price??0;
+  els.productSpec.value=p.spec||"";
+  els.expiryDate.value=p.expiry_date||"";
+  els.productWarehouse.value=p.warehouse||"";
+  els.stockStatus.value=p.stock_status||"in_stock";
+  els.listingStatus.value=p.listing_status||"listed";
+
+  // 載入目前這個商品自己的圖片
+  els.currentImageUrl.value=p.image_url||"";
+
+  if(p.image_url){
+    showImagePreview(p.image_url);
+  }else{
+    hideImagePreview();
+  }
+
+  els.description.value=p.description||"";
+
+  variantEditorState=
+    getVariantsForProduct(p.id).map(makeVariantState);
+
+  renderVariantEditor();
+
+  els.productModal.classList.remove("hidden");
+}
 
 function makeUploadPath(file){const ext=((file.name||"image.jpg").split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg",r=(crypto.randomUUID?.()||Math.random().toString(36).slice(2)).replace(/-/g,"");return`products/${Date.now()}-${r}.${ext}`}
 async function uploadProductImage(file){if(!file)return null;if(!file.type.startsWith("image/"))throw new Error("請選擇圖片檔案");const path=makeUploadPath(file),{error}=await db.storage.from(STORAGE_BUCKET).upload(path,file,{cacheControl:"3600",upsert:false,contentType:file.type});if(error)throw error;const{data}=db.storage.from(STORAGE_BUCKET).getPublicUrl(path);return{path,publicUrl:data.publicUrl}}
@@ -353,6 +406,9 @@ els.activityManagerToggle?.addEventListener("keydown", event => {
 });
 
 db.auth.onAuthStateChange((_e,s)=>{if(s?.user)showAdmin(s.user)});
+
+
+  
 checkSession();
 </script>
 </body>
