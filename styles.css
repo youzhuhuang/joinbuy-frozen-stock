@@ -60,13 +60,22 @@ footer{text-align:center;padding:22px 12px 34px;color:#8f7d6f;font-size:11px}
 .detail-backdrop{position:fixed;inset:0;z-index:100;background:rgba(38,25,16,.48);padding:18px 10px;overflow-y:auto;display:flex;align-items:flex-start;justify-content:center}
 .detail-modal{position:relative;width:min(520px,100%);margin:auto;background:var(--panel);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:0 24px 70px rgba(45,30,20,.25)}
 .detail-close{position:absolute;top:10px;right:10px;z-index:2;width:38px;height:38px;border:0;border-radius:50%;background:rgba(255,255,255,.92);color:var(--brown);font-size:25px;line-height:1;box-shadow:0 5px 18px rgba(0,0,0,.12)}
-.detail-media{height:280px;background:linear-gradient(135deg,#ead7bd,#f7ecdc);display:grid;place-items:center;overflow:hidden}
-.detail-media img{
+.detail-media{
   width:100%;
-  height:100%;
+  background:#fffdf9;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+.detail-media img{
+  display:block;
+  width:100%;
+  height:auto;
+  max-height:70vh;
   object-fit:contain;
   background:#fffdf9;
-  padding:10px;
 }
 .detail-media .fallback{font-size:72px}
 .detail-content{padding:18px}
@@ -87,7 +96,12 @@ footer{text-align:center;padding:22px 12px 34px;color:#8f7d6f;font-size:11px}
 .detail-description-box p{margin:0;white-space:pre-wrap;color:#55483e;font-size:13px;line-height:1.7}
 .detail-note{margin:17px 0 0;padding-top:12px;border-top:1px dashed var(--line);color:var(--muted);font-size:10px;text-align:center}
 body.modal-open{overflow:hidden}
-@media(min-width:760px){.card:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(76,47,24,.12)}.detail-media{height:340px}}
+@media(min-width:760px){
+  .card:hover{
+    transform:translateY(-2px);
+    box-shadow:0 14px 30px rgba(76,47,24,.12);
+  }
+}
 /* 客人端：口味／規格 */
 
 .card-variant-hint{
