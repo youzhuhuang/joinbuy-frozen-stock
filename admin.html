@@ -526,6 +526,7 @@ await loadProducts()}catch(err){for(const p of uploaded)await db.storage.from(ST
   els.saveProductBtn.disabled=false;
   els.saveProductBtn.textContent="儲存商品";
 }
+  });
 async function addCategoryInline(name){if(getAllCategories().includes(name))throw new Error("這個分類已經存在，請直接從分類選單選擇");const sort=categories.length?Math.max(...categories.map(x=>Number(x.sort_order||0)))+1:1;const{error}=await db.from("categories").insert({name,sort_order:sort});if(error)throw error}
 window.deleteProduct=async id=>{const p=products.find(x=>x.id===id);if(!p||!confirm(`確定要刪除「${p.name}」嗎？\n\n刪除後無法復原。`))return;const imgs=[p.image_url,...getVariantsForProduct(id).map(x=>x.image_url)].filter(Boolean),{error}=await db.from("products").delete().eq("id",id);if(error)return toast("刪除失敗："+error.message);for(const u of [...new Set(imgs)])await removeStorageImageByUrl(u);toast("商品已刪除");await loadProducts()}
 
