@@ -20,15 +20,45 @@
 
   <main class="shell">
     <!-- 後台活動管理會控制此區塊 -->
-    <section id="activitySection" class="activity-card hidden">
-      <div class="activity-main">
-        <span id="activityBadge" class="activity-badge">🎉 最新活動</span>
-        <h2 id="activityTitle">揪愛買活動專區</h2>
-        <p id="activityDescription"></p>
-        <div id="activityPeriod" class="activity-period hidden"></div>
-      </div>
-      <div class="activity-icon" aria-hidden="true">🎁</div>
-    </section>
+<section id="activitySection" class="activity-card hidden">
+
+  <div id="activityImageWrap" class="activity-image-wrap hidden">
+    <img
+      id="activityImage"
+      class="activity-image"
+      alt="活動圖片"
+    >
+  </div>
+
+  <div class="activity-main">
+    <span
+      id="activityBadge"
+      class="activity-badge"
+    >
+      🎉 最新活動
+    </span>
+
+    <h2 id="activityTitle">
+      揪愛買活動專區
+    </h2>
+
+    <p id="activityDescription"></p>
+
+    <div
+      id="activityPeriod"
+      class="activity-period hidden"
+    ></div>
+
+    <button
+      id="activityButton"
+      class="activity-button hidden"
+      type="button"
+    >
+      查看活動商品
+    </button>
+  </div>
+
+</section>
 
     <section class="controls">
       <label class="search">
