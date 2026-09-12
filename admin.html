@@ -114,6 +114,73 @@
       <label>活動內容</label>
       <textarea id="activityDescriptionInput" maxlength="500" placeholder="例如：冷凍現貨單筆滿 $199 贈黃金乳酪蛋腸乙包"></textarea>
     </div>
+
+<div class="field">
+  <label>活動圖片</label>
+
+  <div class="image-upload">
+    <div class="image-picker">
+      <input
+        id="activityImageFile"
+        class="image-file"
+        type="file"
+        accept="image/*"
+      >
+
+      <label
+        for="activityImageFile"
+        class="image-pick-btn"
+      >
+        📷 選擇活動圖片
+      </label>
+
+      <div class="image-help">
+        可直接從手機相簿選擇活動 Banner 圖片。
+      </div>
+    </div>
+
+    <input
+      id="activityCurrentImageUrl"
+      type="hidden"
+    >
+
+    <div
+      id="activityImagePreviewWrap"
+      class="image-preview-wrap hidden"
+    >
+      <img
+        id="activityImagePreview"
+        class="image-preview"
+        alt="活動圖片預覽"
+      >
+
+      <button
+        id="removeActivityImageBtn"
+        class="remove-image-btn"
+        type="button"
+      >
+        移除圖片
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="field">
+  <label>活動按鈕文字</label>
+  <input
+    id="activityButtonText"
+    maxlength="40"
+    placeholder="例如：查看活動商品"
+  >
+</div>
+
+<div class="field">
+  <label>指定活動分類</label>
+  <select id="activityTargetCategory">
+    <option value="">不指定分類</option>
+  </select>
+</div>
+    
     <div class="activity-form-grid">
       <div class="field">
         <label>開始日期</label>
@@ -163,7 +230,15 @@ const SUPABASE_KEY="sb_publishable_3npPxEjVJEr6zL0DodRoIQ_MTu4TPy0";
 const STORAGE_BUCKET="product-images";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-const els={loginView:q("loginView"),adminView:q("adminView"),loginForm:q("loginForm"),email:q("email"),password:q("password"),loginBtn:q("loginBtn"),loginError:q("loginError"),logoutBtn:q("logoutBtn"),adminEmail:q("adminEmail"),refreshBtn:q("refreshBtn"),addBtn:q("addBtn"),addCategoryBtn:q("addCategoryBtn"),categoryManager:q("categoryManager"),categoryManagerToggle:q("categoryManagerToggle"),categoryCountText:q("categoryCountText"),categoryList:q("categoryList"),totalCount:q("totalCount"),stockCount:q("stockCount"),unlistedCount:q("unlistedCount"),activityManager:q("activityManager"),activityManagerToggle:q("activityManagerToggle"),activityForm:q("activityForm"),activityAdminStatus:q("activityAdminStatus"),activityEnabled:q("activityEnabled"),activityBadgeInput:q("activityBadgeInput"),activityTitleInput:q("activityTitleInput"),activityDescriptionInput:q("activityDescriptionInput"),activityStartDate:q("activityStartDate"),activityEndDate:q("activityEndDate"),saveActivityBtn:q("saveActivityBtn"),activityAdminHelp:q("activityAdminHelp"),searchInput:q("searchInput"),categoryFilter:q("categoryFilter"),listingFilter:q("listingFilter"),expiryFilter:q("expiryFilter"),loadingState:q("loadingState"),emptyState:q("emptyState"),tableWrap:q("tableWrap"),productBody:q("productBody"),productModal:q("productModal"),modalTitle:q("modalTitle"),closeModalBtn:q("closeModalBtn"),cancelModalBtn:q("cancelModalBtn"),productForm:q("productForm"),productId:q("productId"),productName:q("productName"),productCategory:q("productCategory"),customCategory:q("customCategory"),productPrice:q("productPrice"),productSpec:q("productSpec"),expiryDate:q("expiryDate"),productWarehouse:q("productWarehouse"),stockStatus:q("stockStatus"),listingStatus:q("listingStatus"),imageFile:q("imageFile"),currentImageUrl:q("currentImageUrl"),imagePreviewWrap:q("imagePreviewWrap"),imagePreview:q("imagePreview"),removeImageBtn:q("removeImageBtn"),description:q("description"),addVariantBtn:q("addVariantBtn"),variantList:q("variantList"),basePriceField:q("basePriceField"),baseExpiryField:q("baseExpiryField"),baseWarehouseField:q("baseWarehouseField"),baseStatusFields:q("baseStatusFields"),baseImageField:q("baseImageField"),saveProductBtn:q("saveProductBtn"),toast:q("toast")};
+const els={loginView:q("loginView"),adminView:q("adminView"),loginForm:q("loginForm"),email:q("email"),password:q("password"),loginBtn:q("loginBtn"),loginError:q("loginError"),logoutBtn:q("logoutBtn"),adminEmail:q("adminEmail"),refreshBtn:q("refreshBtn"),addBtn:q("addBtn"),addCategoryBtn:q("addCategoryBtn"),categoryManager:q("categoryManager"),categoryManagerToggle:q("categoryManagerToggle"),categoryCountText:q("categoryCountText"),categoryList:q("categoryList"),totalCount:q("totalCount"),stockCount:q("stockCount"),unlistedCount:q("unlistedCount"),activityManager:q("activityManager"),activityManagerToggle:q("activityManagerToggle"),activityForm:q("activityForm"),activityAdminStatus:q("activityAdminStatus"),activityEnabled:q("activityEnabled"),activityBadgeInput:q("activityBadgeInput"),activityTitleInput:q("activityTitleInput"),activityDescriptionInput:q("activityDescriptionInput"),
+activityImageFile:q("activityImageFile"),
+activityCurrentImageUrl:q("activityCurrentImageUrl"),
+activityImagePreviewWrap:q("activityImagePreviewWrap"),
+activityImagePreview:q("activityImagePreview"),
+removeActivityImageBtn:q("removeActivityImageBtn"),
+activityButtonText:q("activityButtonText"),
+activityTargetCategory:q("activityTargetCategory"),
+activityStartDate:q("activityStartDate"),activityEndDate:q("activityEndDate"),saveActivityBtn:q("saveActivityBtn"),activityAdminHelp:q("activityAdminHelp"),searchInput:q("searchInput"),categoryFilter:q("categoryFilter"),listingFilter:q("listingFilter"),expiryFilter:q("expiryFilter"),loadingState:q("loadingState"),emptyState:q("emptyState"),tableWrap:q("tableWrap"),productBody:q("productBody"),productModal:q("productModal"),modalTitle:q("modalTitle"),closeModalBtn:q("closeModalBtn"),cancelModalBtn:q("cancelModalBtn"),productForm:q("productForm"),productId:q("productId"),productName:q("productName"),productCategory:q("productCategory"),customCategory:q("customCategory"),productPrice:q("productPrice"),productSpec:q("productSpec"),expiryDate:q("expiryDate"),productWarehouse:q("productWarehouse"),stockStatus:q("stockStatus"),listingStatus:q("listingStatus"),imageFile:q("imageFile"),currentImageUrl:q("currentImageUrl"),imagePreviewWrap:q("imagePreviewWrap"),imagePreview:q("imagePreview"),removeImageBtn:q("removeImageBtn"),description:q("description"),addVariantBtn:q("addVariantBtn"),variantList:q("variantList"),basePriceField:q("basePriceField"),baseExpiryField:q("baseExpiryField"),baseWarehouseField:q("baseWarehouseField"),baseStatusFields:q("baseStatusFields"),baseImageField:q("baseImageField"),saveProductBtn:q("saveProductBtn"),toast:q("toast")};
 function q(id){return document.getElementById(id)}
 let products=[],
     categories=[],
@@ -203,14 +278,35 @@ const dbCats=categoryDbAvailable?(c.data||[]).filter(x=>String(x.name||"").trim(
 const productNames=products.map(x=>String(x.category||"").trim()).filter(Boolean);
 if(categoryDbAvailable){const names=dbCats.map(x=>x.name),missing=productNames.filter(n=>!names.includes(n));categories=[...dbCats,...makeLocalCategoryRecords(missing).map((x,i)=>({...x,id:-(dbCats.length+i+1)}))];if(!categories.length)categories=makeLocalCategoryRecords(DEFAULT_CATEGORIES)}
 else{const names=[...new Set([...getLocalCategoryNames(),...productNames])];categories=makeLocalCategoryRecords(names.length?names:DEFAULT_CATEGORIES);saveLocalCategoryNames(getAllCategories())}
-renderCategoryManager();buildCategoryFilter();buildProductCategoryOptions();updateSummary();renderProducts()
+renderCategoryManager();buildCategoryFilter();buildProductCategoryOptions();buildActivityCategoryOptions();updateSummary();renderProducts()
 }
 const loadProducts=loadAllData;
 function getAllCategories(){const n=[];categories.forEach(x=>{if(x.name&&!n.includes(x.name))n.push(x.name)});products.forEach(x=>{const a=String(x.category||"").trim();if(a&&!n.includes(a))n.push(a)});return n}
 function findCategoryRecord(n){return categories.find(x=>x.name===n)||null}
 function buildCategoryFilter(){const cur=els.categoryFilter.value,n=getAllCategories();els.categoryFilter.innerHTML='<option value="">全部分類</option>';n.forEach(x=>els.categoryFilter.add(new Option(x,x)));if(n.includes(cur))els.categoryFilter.value=cur}
 function buildProductCategoryOptions(sel=""){const n=getAllCategories();els.productCategory.innerHTML='<option value="">請選擇</option>';n.forEach(x=>els.productCategory.add(new Option(x,x)));els.productCategory.add(new Option("＋ 新增分類","__new__"));if(n.includes(sel))els.productCategory.value=sel}
-function updateSummary(){els.totalCount.textContent=products.length;els.stockCount.textContent=products.filter(x=>getProductDisplayInfo(x).stockStatus==="in_stock").length;els.unlistedCount.textContent=products.filter(x=>getProductDisplayInfo(x).listingStatus==="unlisted").length}
+function buildActivityCategoryOptions(sel=null){
+  const current=
+    sel===null
+      ? els.activityTargetCategory.value
+      : sel;
+
+  const n=getAllCategories();
+
+  els.activityTargetCategory.innerHTML=
+    '<option value="">不指定分類</option>';
+
+  n.forEach(x=>{
+    els.activityTargetCategory.add(
+      new Option(x,x)
+    );
+  });
+
+  if(n.includes(current)){
+    els.activityTargetCategory.value=current;
+  }
+}
+  function updateSummary(){els.totalCount.textContent=products.length;els.stockCount.textContent=products.filter(x=>getProductDisplayInfo(x).stockStatus==="in_stock").length;els.unlistedCount.textContent=products.filter(x=>getProductDisplayInfo(x).listingStatus==="unlisted").length}
 
 function renderCategoryManager(){const n=getAllCategories();els.categoryCountText.textContent=`${n.length} 個分類`;if(!n.length){els.categoryList.innerHTML='<span style="color:var(--muted);font-size:12px">目前尚未建立分類</span>';return}els.categoryList.innerHTML=n.map((name,i)=>{const r=findCategoryRecord(name);return`<div class="category-chip"><span class="category-chip-name">${escapeHtml(name)}</span>${r?`<button type="button" ${i>0?"":"disabled"} onclick="moveCategory(${r.id},-1)">↑</button><button type="button" ${i<categories.length-1?"":"disabled"} onclick="moveCategory(${r.id},1)">↓</button>`:""}<button type="button" onclick='renameCategory(${JSON.stringify(name)})'>修改</button><button type="button" class="cat-delete" onclick='deleteCategory(${JSON.stringify(name)})'>刪除</button></div>`}).join("")}
 function refreshCategoryUI(){renderCategoryManager();buildCategoryFilter();buildProductCategoryOptions();renderProducts()}
@@ -326,8 +422,55 @@ window.editProduct=id=>{
 }
 
 function makeUploadPath(file){const ext=((file.name||"image.jpg").split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg",r=(crypto.randomUUID?.()||Math.random().toString(36).slice(2)).replace(/-/g,"");return`products/${Date.now()}-${r}.${ext}`}
-async function uploadProductImage(file){if(!file)return null;if(!file.type.startsWith("image/"))throw new Error("請選擇圖片檔案");const path=makeUploadPath(file),{error}=await db.storage.from(STORAGE_BUCKET).upload(path,file,{cacheControl:"3600",upsert:false,contentType:file.type});if(error)throw error;const{data}=db.storage.from(STORAGE_BUCKET).getPublicUrl(path);return{path,publicUrl:data.publicUrl}}
-function getStoragePathFromPublicUrl(url){const m=`/storage/v1/object/public/${STORAGE_BUCKET}/`,i=(url||"").indexOf(m);return i<0?null:decodeURIComponent(url.slice(i+m.length))}
+function makeActivityUploadPath(file){
+  const ext=
+    ((file.name||"image.jpg")
+      .split(".")
+      .pop()||"jpg")
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g,"")||"jpg";
+
+  const r=
+    (crypto.randomUUID?.()||
+      Math.random().toString(36).slice(2))
+      .replace(/-/g,"");
+
+  return `activities/${Date.now()}-${r}.${ext}`;
+}
+  async function uploadProductImage(file){if(!file)return null;if(!file.type.startsWith("image/"))throw new Error("請選擇圖片檔案");const path=makeUploadPath(file),{error}=await db.storage.from(STORAGE_BUCKET).upload(path,file,{cacheControl:"3600",upsert:false,contentType:file.type});if(error)throw error;const{data}=db.storage.from(STORAGE_BUCKET).getPublicUrl(path);return{path,publicUrl:data.publicUrl}}
+async function uploadActivityImage(file){
+  if(!file)return null;
+
+  if(!file.type.startsWith("image/")){
+    throw new Error("請選擇圖片檔案");
+  }
+
+  const path=makeActivityUploadPath(file);
+
+  const {error}=await db.storage
+    .from(STORAGE_BUCKET)
+    .upload(
+      path,
+      file,
+      {
+        cacheControl:"3600",
+        upsert:false,
+        contentType:file.type
+      }
+    );
+
+  if(error)throw error;
+
+  const {data}=db.storage
+    .from(STORAGE_BUCKET)
+    .getPublicUrl(path);
+
+  return{
+    path,
+    publicUrl:data.publicUrl
+  };
+}
+  function getStoragePathFromPublicUrl(url){const m=`/storage/v1/object/public/${STORAGE_BUCKET}/`,i=(url||"").indexOf(m);return i<0?null:decodeURIComponent(url.slice(i+m.length))}
 async function removeStorageImageByUrl(url){const p=getStoragePathFromPublicUrl(url);if(p)await db.storage.from(STORAGE_BUCKET).remove([p])}
 function variantStockToProduct(v){return v==="庫存已售完"?"sold_out":"in_stock"}function variantListingToProduct(v){return v==="下架"?"unlisted":"listed"}
 
@@ -388,7 +531,48 @@ window.deleteProduct=async id=>{const p=products.find(x=>x.id===id);if(!p||!conf
 
 els.imageFile.addEventListener("change",()=>{const f=els.imageFile.files?.[0];if(!f)return;clearPreviewObjectUrl();previewObjectUrl=URL.createObjectURL(f);showImagePreview(previewObjectUrl);imageMarkedForRemoval=false});
 els.removeImageBtn.addEventListener("click",()=>{els.imageFile.value="";imageMarkedForRemoval=true;hideImagePreview()});
-els.addVariantBtn.addEventListener("click",()=>{variantEditorState.push(makeVariantState());renderVariantEditor()});
+let activityPreviewObjectUrl="";
+let activityImageMarkedForRemoval=false;
+
+function clearActivityPreviewObjectUrl(){
+  if(activityPreviewObjectUrl){
+    URL.revokeObjectURL(activityPreviewObjectUrl);
+    activityPreviewObjectUrl="";
+  }
+}
+
+els.activityImageFile.addEventListener("change",()=>{
+  const file=els.activityImageFile.files?.[0];
+
+  if(!file)return;
+
+  clearActivityPreviewObjectUrl();
+
+  activityPreviewObjectUrl=
+    URL.createObjectURL(file);
+
+  els.activityImagePreview.src=
+    activityPreviewObjectUrl;
+
+  els.activityImagePreviewWrap
+    .classList.remove("hidden");
+
+  activityImageMarkedForRemoval=false;
+});
+
+els.removeActivityImageBtn.addEventListener("click",()=>{
+  els.activityImageFile.value="";
+
+  activityImageMarkedForRemoval=true;
+
+  clearActivityPreviewObjectUrl();
+
+  els.activityImagePreview.removeAttribute("src");
+
+  els.activityImagePreviewWrap
+    .classList.add("hidden");
+});
+  els.addVariantBtn.addEventListener("click",()=>{variantEditorState.push(makeVariantState());renderVariantEditor()});
 els.variantList.addEventListener("input",e=>{const c=e.target.closest(".variant-card"),field=e.target.dataset.field;if(!c||!field)return;const x=variantEditorState.find(v=>v.key===c.dataset.key);if(x)x[field]=e.target.value});
 els.variantList.addEventListener("change",e=>{const c=e.target.closest(".variant-card");if(!c)return;const x=variantEditorState.find(v=>v.key===c.dataset.key);if(!x)return;if(e.target.dataset.field){x[e.target.dataset.field]=e.target.value;return}if(e.target.dataset.action==="variant-file"){const f=e.target.files?.[0];if(!f)return;if(x.previewObjectUrl)URL.revokeObjectURL(x.previewObjectUrl);x.file=f;x.previewObjectUrl=URL.createObjectURL(f);x.imageMarkedForRemoval=false;renderVariantEditor()}});
 els.variantList.addEventListener("click",e=>{const b=e.target.closest("button"),c=b?.closest(".variant-card");if(!b||!c)return;const i=variantEditorState.findIndex(v=>v.key===c.dataset.key);if(i<0)return;const x=variantEditorState[i];if(b.dataset.action==="remove-variant"){if(confirm(`確定要移除「${x.variant_name||"這個口味／規格"}」嗎？`)){variantEditorState.splice(i,1);renderVariantEditor()}}else if(b.dataset.action==="remove-variant-image"){x.file=null;x.image_url="";x.previewObjectUrl="";x.imageMarkedForRemoval=true;renderVariantEditor()}});
@@ -398,49 +582,183 @@ els.addCategoryBtn.addEventListener("click",addCategory);els.addBtn.addEventList
 
 
 async function loadActivityAdmin(){
-  const {data,error}=await db.from("site_activity").select("id,enabled,badge,title,description,start_date,end_date,updated_at").eq("id",1).maybeSingle();
+  const {data,error}=await db
+    .from("site_activity")
+    .select("id,enabled,badge,title,description,image_url,button_text,target_category,start_date,end_date,updated_at")
+    .eq("id",1)
+    .maybeSingle();
+
   if(error){
     els.activityAdminStatus.textContent="需先建立資料表";
     els.activityAdminStatus.classList.remove("on");
-    els.activityAdminHelp.textContent="請先在 Supabase SQL Editor 執行隨附的 setup_activity.sql，完成後按重新整理。";
+    els.activityAdminHelp.textContent="請先在 Supabase SQL Editor 完成活動資料表設定，完成後按重新整理。";
     els.saveActivityBtn.disabled=true;
     return;
   }
+
   els.saveActivityBtn.disabled=false;
+
   const a=data||{};
+
   els.activityEnabled.checked=!!a.enabled;
   els.activityBadgeInput.value=a.badge||"🎉 最新活動";
   els.activityTitleInput.value=a.title||"揪愛買活動專區";
   els.activityDescriptionInput.value=a.description||"";
+
+  els.activityButtonText.value=a.button_text||"";
+  buildActivityCategoryOptions(a.target_category||"");
+
   els.activityStartDate.value=a.start_date||"";
   els.activityEndDate.value=a.end_date||"";
-  els.activityAdminStatus.textContent=a.enabled?"顯示中":"未顯示";
-  els.activityAdminStatus.classList.toggle("on",!!a.enabled);
+
+  clearActivityPreviewObjectUrl();
+activityImageMarkedForRemoval=false;
+  
+  els.activityImageFile.value="";
+  els.activityCurrentImageUrl.value=a.image_url||"";
+
+  if(a.image_url){
+    els.activityImagePreview.src=a.image_url;
+    els.activityImagePreviewWrap.classList.remove("hidden");
+  }else{
+    els.activityImagePreview.removeAttribute("src");
+    els.activityImagePreviewWrap.classList.add("hidden");
+  }
+
+  els.activityAdminStatus.textContent=
+    a.enabled?"顯示中":"未顯示";
+
+  els.activityAdminStatus.classList.toggle(
+    "on",
+    !!a.enabled
+  );
 }
 
 els.activityForm.addEventListener("submit",async event=>{
   event.preventDefault();
-  const title=els.activityTitleInput.value.trim();
-  if(!title){toast("請輸入活動標題");return}
-  if(els.activityStartDate.value&&els.activityEndDate.value&&els.activityStartDate.value>els.activityEndDate.value){toast("活動結束日期不能早於開始日期");return}
+
+  const title=
+    els.activityTitleInput.value.trim();
+
+  if(!title){
+    toast("請輸入活動標題");
+    return;
+  }
+
+  if(
+    els.activityStartDate.value &&
+    els.activityEndDate.value &&
+    els.activityStartDate.value >
+      els.activityEndDate.value
+  ){
+    toast("活動結束日期不能早於開始日期");
+    return;
+  }
+
   els.saveActivityBtn.disabled=true;
   els.saveActivityBtn.textContent="儲存中...";
-  const payload={
-    id:1,
-    enabled:els.activityEnabled.checked,
-    badge:els.activityBadgeInput.value.trim()||"🎉 最新活動",
-    title,
-    description:els.activityDescriptionInput.value.trim()||null,
-    start_date:els.activityStartDate.value||null,
-    end_date:els.activityEndDate.value||null,
-    updated_at:new Date().toISOString()
-  };
-  const {error}=await db.from("site_activity").upsert(payload,{onConflict:"id"});
-  els.saveActivityBtn.disabled=false;
-  els.saveActivityBtn.textContent="儲存活動";
-  if(error){toast("活動儲存失敗："+error.message);return}
-  toast("活動已儲存，客人端會同步更新");
-  await loadActivityAdmin();
+
+  const oldImageUrl=
+    els.activityCurrentImageUrl.value.trim();
+
+  const file=
+    els.activityImageFile.files?.[0]||null;
+
+  let finalImageUrl=
+    activityImageMarkedForRemoval
+      ? null
+      : (oldImageUrl||null);
+
+  let newUpload=null;
+
+  try{
+    if(file){
+      newUpload=
+        await uploadActivityImage(file);
+
+      finalImageUrl=
+        newUpload.publicUrl;
+    }
+
+    const payload={
+      id:1,
+      enabled:els.activityEnabled.checked,
+      badge:
+        els.activityBadgeInput.value.trim()||
+        "🎉 最新活動",
+      title,
+      description:
+        els.activityDescriptionInput.value.trim()||
+        null,
+      image_url:finalImageUrl,
+      button_text:
+        els.activityButtonText.value.trim()||
+        null,
+      target_category:
+        els.activityTargetCategory.value||
+        null,
+      start_date:
+        els.activityStartDate.value||
+        null,
+      end_date:
+        els.activityEndDate.value||
+        null,
+      updated_at:
+        new Date().toISOString()
+    };
+
+    const {error}=await db
+      .from("site_activity")
+      .upsert(
+        payload,
+        {onConflict:"id"}
+      );
+
+    if(error)throw error;
+
+    if(
+      oldImageUrl &&
+      (
+        (
+          newUpload?.publicUrl &&
+          oldImageUrl!==newUpload.publicUrl
+        ) ||
+        (
+          activityImageMarkedForRemoval &&
+          !newUpload
+        )
+      )
+    ){
+      await removeStorageImageByUrl(
+        oldImageUrl
+      );
+    }
+
+    toast(
+      "活動已儲存，客人端會同步更新"
+    );
+
+    await loadActivityAdmin();
+
+  }catch(err){
+
+    if(newUpload?.path){
+      await db.storage
+        .from(STORAGE_BUCKET)
+        .remove([newUpload.path]);
+    }
+
+    toast(
+      "活動儲存失敗："+
+      (err?.message||"未知錯誤")
+    );
+
+  }finally{
+
+    els.saveActivityBtn.disabled=false;
+    els.saveActivityBtn.textContent=
+      "儲存活動";
+  }
 });
 
 function toggleCategoryManager(forceOpen=null){
