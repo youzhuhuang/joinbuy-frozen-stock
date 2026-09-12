@@ -670,11 +670,22 @@ async function loadActivity(){
   const activityDescription =
     document.getElementById('activityDescription');
 
+  const activityImageWrap =
+    document.getElementById('activityImageWrap');
+
+  const activityImage =
+    document.getElementById('activityImage');
+
+  const activityPeriod =
+    document.getElementById('activityPeriod');
+
+  const activityButton =
+    document.getElementById('activityButton');
+
   if(!activitySection){
     return;
   }
 
-  // 沒有活動時，恢復原本首頁內容
   function showDefaultActivity(){
     if(activityBadge){
       activityBadge.textContent =
@@ -691,6 +702,25 @@ async function loadActivity(){
         '商品依門市實際庫存為主，售完為止。';
     }
 
+    if(activityImageWrap){
+      activityImageWrap.classList.add('hidden');
+    }
+
+    if(activityImage){
+      activityImage.removeAttribute('src');
+    }
+
+    if(activityPeriod){
+      activityPeriod.textContent = '';
+      activityPeriod.classList.add('hidden');
+    }
+
+    if(activityButton){
+      activityButton.textContent = '';
+      activityButton.classList.add('hidden');
+      activityButton.onclick = null;
+    }
+
     activitySection.classList.remove('hidden');
   }
 
@@ -698,19 +728,16 @@ async function loadActivity(){
     await client
       .from('site_activity')
       .select(
-        'enabled,badge,title,description,start_date,end_date'
+        'enabled,badge,title,description,start_date,end_date,image_url,button_text,target_category'
       )
       .eq('id', 1)
       .maybeSingle();
 
-  // 資料讀取失敗或沒有活動資料
-  // → 顯示原本首頁內容
   if(error || !data){
     showDefaultActivity();
     return;
   }
 
-  // 使用台灣／手機目前的本地日期
   const now = new Date();
 
   const today =
@@ -731,15 +758,11 @@ async function loadActivity(){
     started &&
     notEnded;
 
-  // 沒開活動、尚未開始、或已經結束
-  // → 顯示原本「今天想吃什麼？」
   if(!shouldShowActivity){
     showDefaultActivity();
     return;
   }
 
-  // 有活動而且日期符合
-  // → 顯示後台設定的活動
   if(activityBadge){
     activityBadge.textContent =
       data.badge || '🎉 最新活動';
@@ -755,8 +778,92 @@ async function loadActivity(){
       data.description || '';
   }
 
+  if(activityImageWrap && activityImage){
+    if(data.image_url){
+      activityImage.src = data.image_url;
+      activityImageWrap.classList.remove('hidden');
+    }else{
+      activityImage.removeAttribute('src');
+      activityImageWrap.classList.add('hidden');
+    }
+  }
+
+  if(activityPeriod){
+    const periodParts = [];
+
+    if(data.start_date){
+      periodParts.push(data.start_date);
+    }
+
+    if(data.end_date){
+      periodParts.push(data.end_date);
+    }
+
+    if(periodParts.length){
+      activityPeriod.textContent =
+        '活動期間：' + periodParts.join(' ～ ');
+
+      activityPeriod.classList.remove('hidden');
+    }else{
+      activityPeriod.textContent = '';
+      activityPeriod.classList.add('hidden');
+    }
+  }
+
+  if(activityButton){
+    const buttonText =
+      data.button_text?.trim();
+
+    const targetCategory =
+      data.target_category?.trim();
+
+    if(buttonText && targetCategory){
+      activityButton.textContent =
+        buttonText;
+
+      activityButton.classList.remove('hidden');
+
+      activityButton.onclick = () => {
+        const categorySelect =
+          document.getElementById('categorySelect');
+
+        if(!categorySelect){
+          return;
+        }
+
+        const hasCategory =
+          Array.from(categorySelect.options)
+            .some(
+              option =>
+                option.value === targetCategory
+            );
+
+        if(!hasCategory){
+          return;
+        }
+
+        categorySelect.value =
+          targetCategory;
+
+        categorySelect.dispatchEvent(
+          new Event('change')
+        );
+
+        document
+          .querySelector('.controls')
+          ?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+      };
+    }else{
+      activityButton.textContent = '';
+      activityButton.classList.add('hidden');
+      activityButton.onclick = null;
+    }
+  }
+
   activitySection.classList.remove('hidden');
 }
-
 loadActivity();
 loadProducts();
