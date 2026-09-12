@@ -302,45 +302,58 @@ body.modal-open{overflow:hidden}
 
 .activity-card{
   display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:18px;
-  min-height:155px;
-  padding:22px;
+  flex-direction:column;
+  margin-bottom:13px;
 
   border:1px solid #dfc6a8;
   border-radius:22px;
 
   background:
-    radial-gradient(
-      circle at 85% 20%,
-      rgba(255,255,255,.72),
-      transparent 28%
-    ),
     linear-gradient(
       135deg,
-      #e7c49f,
-      #f5e3cc
+      #f8ead8,
+      #fffaf3
     );
 
   box-shadow:var(--shadow);
   overflow:hidden;
 }
 
+
+/* 活動圖片 */
+
+.activity-image-wrap{
+  width:100%;
+  background:#fffdf9;
+  overflow:hidden;
+}
+
+.activity-image{
+  display:block;
+  width:100%;
+  height:auto;
+  max-height:420px;
+  object-fit:contain;
+  background:#fffdf9;
+}
+
+
+/* 活動文字區 */
+
 .activity-main{
-  flex:1;
-  min-width:0;
+  width:100%;
+  padding:20px;
 }
 
 .activity-badge{
   display:inline-flex;
   align-items:center;
 
-  padding:5px 9px;
+  padding:5px 10px;
   border-radius:999px;
 
-  background:rgba(255,253,249,.72);
-  color:var(--brown2);
+  background:#fff3e4;
+  color:#9b542d;
 
   font-size:11px;
   font-weight:900;
@@ -348,11 +361,11 @@ body.modal-open{overflow:hidden}
 }
 
 .activity-card h2{
-  margin:9px 0 7px;
+  margin:10px 0 7px;
 
   color:var(--brown);
-  font-size:27px;
-  line-height:1.3;
+  font-size:25px;
+  line-height:1.35;
 }
 
 .activity-card p{
@@ -360,60 +373,126 @@ body.modal-open{overflow:hidden}
 
   color:#6e5745;
   font-size:13px;
-  line-height:1.65;
+  line-height:1.7;
 
   white-space:pre-wrap;
 }
 
+
+/* 活動期間 */
+
 .activity-period{
-  margin-top:10px;
+  display:inline-block;
+  margin-top:12px;
+
+  padding:6px 10px;
+
+  border-radius:9px;
+  background:rgba(255,255,255,.7);
 
   color:#8a5b37;
+
   font-size:11px;
   font-weight:800;
 }
 
-.activity-icon{
-  flex:none;
 
-  font-size:52px;
+/* 查看活動商品按鈕 */
 
-  filter:
-    drop-shadow(
-      0 8px 10px rgba(60,30,10,.12)
-    );
+.activity-button{
+  display:block;
+  width:100%;
+
+  margin-top:15px;
+  padding:12px 16px;
+
+  border:0;
+  border-radius:12px;
+
+  background:var(--brown);
+  color:white;
+
+  font-size:14px;
+  font-weight:900;
+
+  cursor:pointer;
+
+  box-shadow:
+    0 6px 16px rgba(77,47,24,.16);
+
+  transition:
+    transform .15s ease,
+    opacity .15s ease;
 }
 
-/* 手機 */
-@media(max-width:480px){
-
-  .activity-card{
-    min-height:145px;
-    padding:20px;
-  }
-
-  .activity-card h2{
-    font-size:25px;
-  }
-
-  .activity-icon{
-    font-size:45px;
-  }
+.activity-button:active{
+  transform:scale(.98);
 }
 
-/* 平板、電腦 */
+
+/* ===== 平板、電腦 ===== */
+
 @media(min-width:760px){
 
   .activity-card{
-    min-height:195px;
+    display:grid;
+    grid-template-columns:minmax(300px,46%) 1fr;
+    align-items:stretch;
+  }
+
+  .activity-image-wrap{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .activity-image{
+    width:100%;
+    height:100%;
+    max-height:360px;
+    object-fit:contain;
+  }
+
+  .activity-main{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+
     padding:32px;
   }
 
   .activity-card h2{
-    font-size:36px;
+    font-size:34px;
   }
 
-  .activity-icon{
-    font-size:70px;
+  .activity-card p{
+    font-size:14px;
+  }
+
+  .activity-button{
+    width:auto;
+    align-self:flex-start;
+
+    padding-left:22px;
+    padding-right:22px;
+  }
+
+  .activity-button:hover{
+    opacity:.9;
+  }
+}
+
+
+/* 沒有活動圖片時 */
+
+.activity-image-wrap.hidden + .activity-main{
+  width:100%;
+}
+
+@media(min-width:760px){
+
+  .activity-image-wrap.hidden + .activity-main{
+    grid-column:1 / -1;
+    min-height:180px;
   }
 }
