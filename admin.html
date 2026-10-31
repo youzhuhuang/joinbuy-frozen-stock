@@ -86,6 +86,16 @@
 .mobile-product-actions .actions{flex:1;display:flex;flex-wrap:wrap}
 .mobile-product-actions .edit-btn{flex:1;min-width:88px;background:var(--brown);color:white;border-color:var(--brown)}
 .mobile-product-actions .quick-warehouse-btn{flex:0 0 auto}
+/* 2.1.1：編輯為主按鈕，倉位與刪除為較小的次要按鈕 */
+@media(max-width:700px){
+ .mobile-product-actions{display:flex;flex-direction:column;align-items:stretch;gap:9px;width:calc(100% + 100px);margin-left:-100px}
+ .mobile-product-actions>.price{align-self:flex-start}
+ .mobile-product-actions .actions{display:flex;width:100%;flex-wrap:nowrap;gap:6px;align-items:stretch}
+ .mobile-product-actions .actions .edit-btn{flex:1 1 auto;min-width:0;font-size:13px;padding:11px 8px}
+ .mobile-product-actions .actions .quick-warehouse-btn{flex:0 0 auto;font-size:11px;padding:9px 8px}
+ .mobile-product-actions .actions .delete-btn{flex:0 0 auto;font-size:11px;padding:9px 8px}
+}
+
 .quick-warehouse-modal{width:min(440px,100%)}
 .quick-warehouse-current{background:#f8f1e8;border-radius:12px;padding:12px;margin-bottom:14px;color:var(--brown2);font-size:13px;line-height:1.7}
 .quick-warehouse-modal .modal-footer button{flex:1}
