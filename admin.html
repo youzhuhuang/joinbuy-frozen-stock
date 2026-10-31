@@ -80,6 +80,15 @@
 .filter-reset{border:1px solid var(--line);background:#fff9f1;color:var(--brown);border-radius:11px;padding:10px 12px;font-weight:800;cursor:pointer}
 .mobile-products{display:none}.mobile-product-card{display:flex;gap:12px;padding:13px;margin-bottom:10px}.mobile-product-card .thumb,.mobile-product-card .thumb-fallback{width:88px;height:88px}.mobile-product-details{flex:1;min-width:0}.mobile-product-details .pname{font-size:14px;overflow-wrap:anywhere}.mobile-product-details .pspec{font-size:12px}.mobile-product-meta{display:flex;gap:6px;flex-wrap:wrap;margin:7px 0}.mobile-product-actions{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:9px}.mobile-product-actions .small-btn{padding:9px 13px}
 @media(max-width:700px){.table-wrap{display:none!important}.mobile-products{display:block}.toolbar{display:grid;grid-template-columns:1fr 1fr}.toolbar input{grid-column:1/-1;width:100%;min-width:0}.toolbar select,#warehouseFilter,.filter-reset{width:100%;min-width:0;flex:auto}.shell{margin-bottom:25px}}
+/* 快速更換倉位 */
+.quick-warehouse-btn{color:var(--brown2);background:#fff9f1;border-color:#dec7ac}
+.mobile-product-actions{flex-wrap:wrap}
+.mobile-product-actions .actions{flex:1;display:flex;flex-wrap:wrap}
+.mobile-product-actions .edit-btn{flex:1;min-width:88px;background:var(--brown);color:white;border-color:var(--brown)}
+.mobile-product-actions .quick-warehouse-btn{flex:0 0 auto}
+.quick-warehouse-modal{width:min(440px,100%)}
+.quick-warehouse-current{background:#f8f1e8;border-radius:12px;padding:12px;margin-bottom:14px;color:var(--brown2);font-size:13px;line-height:1.7}
+.quick-warehouse-modal .modal-footer button{flex:1}
 </style>
 </head>
 <body>
@@ -238,6 +247,18 @@
 <div class="variant-section"><div class="variant-section-head"><h4>口味／規格（選填）</h4><button id="addVariantBtn" class="btn btn-add" type="button">＋ 新增口味／規格</button></div><div class="variant-note">沒有分口味的商品不用新增任何項目，照原本方式填寫即可。<br>若有新增口味／規格，每一項都能獨立設定售價、效期、倉位、圖片、庫存與上架狀態。</div><div id="variantList" class="variant-list"></div></div>
 <div class="field"><label>商品介紹</label><textarea id="description" placeholder="可輸入商品特色、料理方式等"></textarea></div>
 </div><div class="modal-footer"><button type="button" id="cancelModalBtn" class="cancel-btn">取消</button><button id="saveProductBtn" type="submit" class="save-btn">儲存商品</button></div></form></div></div>
+<div id="quickWarehouseBackdrop" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="quickWarehouseTitle">
+  <div class="modal quick-warehouse-modal">
+    <div class="modal-head"><h3 id="quickWarehouseTitle">🧊 更換倉位</h3><button id="quickWarehouseClose" class="close-btn" type="button" aria-label="關閉">×</button></div>
+    <div class="modal-body">
+      <div id="quickWarehouseProduct" style="font-weight:800;color:var(--brown);margin-bottom:12px"></div>
+      <div id="quickWarehouseVariantField" class="field hidden"><label for="quickWarehouseVariant">選擇要移動的口味／規格</label><select id="quickWarehouseVariant"></select></div>
+      <div class="quick-warehouse-current">目前倉位：<strong id="quickWarehouseCurrent"></strong></div>
+      <div class="field"><label for="quickWarehouseSelect">選擇新的倉位</label><select id="quickWarehouseSelect"></select></div>
+    </div>
+    <div class="modal-footer"><button id="quickWarehouseCancel" type="button" class="cancel-btn">取消</button><button id="quickWarehouseSave" type="button" class="save-btn">確認更換</button></div>
+  </div>
+</div>
 <div id="toast" class="toast hidden"></div>
 
 <script>
@@ -339,7 +360,72 @@ function getFilteredProducts(){
 const s=els.searchInput.value.trim().toLowerCase(),c=els.categoryFilter.value,l=els.listingFilter.value,e=els.expiryFilter.value,w=els.warehouseFilter.value;
 return products.filter(p=>{const d=getProductDisplayInfo(p),info=getExpiryInfo(d.expiryDate);const ms=!s||String(p.name||"").toLowerCase().includes(s)||String(p.spec||"").toLowerCase().includes(s),mc=!c||p.category===c,ml=!l||(l==="listed"||l==="unlisted"?d.listingStatus===l:d.stockStatus===l);let me=true;if(e==="expired")me=info.days!==null&&info.days<0;else if(e==="urgent")me=info.days!==null&&info.days>=0&&info.days<=7;else if(e==="soon")me=info.days!==null&&info.days>=8&&info.days<=30;else if(e==="normal")me=info.days!==null&&info.days>=31;else if(e==="unset")me=info.days===null;const variants=getVariantsForProduct(p.id);const mw=!w||(variants.length?variants.some(v=>v.warehouse===w):p.warehouse===w);return ms&&mc&&ml&&me&&mw})
 }
-function renderProducts(){const list=getFilteredProducts();if(!list.length){els.mobileProductList.innerHTML="";els.tableWrap.classList.add("hidden");els.emptyState.classList.remove("hidden");return}els.emptyState.classList.add("hidden");els.tableWrap.classList.remove("hidden");els.mobileProductList.innerHTML=list.map(p=>{const d=getProductDisplayInfo(p),ex=getExpiryInfo(d.expiryDate),u=p.image_url,img=u?`<img class="thumb" src="${escapeHtml(u)}" alt="">`:`<div class="thumb-fallback">${emojiMap[p.category]||"❄️"}</div>`;return `<article class="card mobile-product-card">${img}<div class="mobile-product-details"><div class="pname">${escapeHtml(p.name||"")}</div><div class="pspec">${escapeHtml(p.spec||"")}</div><div class="mobile-product-meta"><span class="badge badge-gray">${escapeHtml(p.category||"未分類")}</span><span class="badge badge-orange">🧊 ${escapeHtml(d.warehouseText||"未設定倉位")}</span>${d.variants.length?`<span class="variant-tag">${d.variants.length} 個口味／規格</span>`:""}</div><div class="pspec">效期：${formatDateOnly(d.expiryDate)}・<span class="expiry-badge ${ex.cls}">${ex.text}</span></div><div class="mobile-product-meta"><span class="badge ${d.stockStatus==="sold_out"?"badge-orange":"badge-green"}">${d.stockStatus==="sold_out"?"庫存已售完":"尚有庫存"}</span><span class="badge ${d.listingStatus==="unlisted"?"badge-gray":"badge-green"}">${d.listingStatus==="unlisted"?"已下架":"上架中"}</span></div><div class="mobile-product-actions"><span class="price">${d.priceText}</span><div class="actions"><button class="small-btn edit-btn" onclick="editProduct(${p.id})">編輯</button><button class="small-btn delete-btn" onclick="deleteProduct(${p.id})">刪除</button></div></div></div></article>`}).join("");els.productBody.innerHTML=list.map(p=>{const d=getProductDisplayInfo(p),u=p.image_url,img=u?`<img class="thumb" src="${escapeHtml(u)}">`:`<div class="thumb-fallback">${emojiMap[p.category]||"❄️"}</div>`,stock=d.stockStatus==="sold_out"?'<span class="badge badge-orange">庫存已售完</span>':'<span class="badge badge-green">尚有庫存</span>',listing=d.listingStatus==="unlisted"?'<span class="badge badge-gray">已下架</span>':'<span class="badge badge-green">上架中</span>',tag=d.variants.length?`<div class="variant-tag">${d.variants.length} 個口味／規格</div>`:"",ex=getExpiryInfo(d.expiryDate);return`<tr><td><div class="product-cell">${img}<div><div class="pname">${escapeHtml(p.name||"")}</div><div class="pspec">${escapeHtml(p.spec||"")}</div>${tag}</div></div></td><td>${escapeHtml(p.category||"")}</td><td class="price">${d.priceText}</td><td>${escapeHtml(d.warehouseText)}</td><td><div>${formatDateOnly(d.expiryDate)}</div><span class="expiry-badge ${ex.cls}">${ex.text}</span></td><td>${stock}</td><td>${listing}</td><td><div class="actions"><button class="small-btn edit-btn" onclick="editProduct(${p.id})">編輯</button><button class="small-btn delete-btn" onclick="deleteProduct(${p.id})">刪除</button></div></td></tr>`}).join("")}
+function renderProducts(){const list=getFilteredProducts();if(!list.length){els.mobileProductList.innerHTML="";els.tableWrap.classList.add("hidden");els.emptyState.classList.remove("hidden");return}els.emptyState.classList.add("hidden");els.tableWrap.classList.remove("hidden");els.mobileProductList.innerHTML=list.map(p=>{const d=getProductDisplayInfo(p),ex=getExpiryInfo(d.expiryDate),u=p.image_url,img=u?`<img class="thumb" src="${escapeHtml(u)}" alt="">`:`<div class="thumb-fallback">${emojiMap[p.category]||"❄️"}</div>`;return `<article class="card mobile-product-card">${img}<div class="mobile-product-details"><div class="pname">${escapeHtml(p.name||"")}</div><div class="pspec">${escapeHtml(p.spec||"")}</div><div class="mobile-product-meta"><span class="badge badge-gray">${escapeHtml(p.category||"未分類")}</span><span class="badge badge-orange">🧊 ${escapeHtml(d.warehouseText||"未設定倉位")}</span>${d.variants.length?`<span class="variant-tag">${d.variants.length} 個口味／規格</span>`:""}</div><div class="pspec">效期：${formatDateOnly(d.expiryDate)}・<span class="expiry-badge ${ex.cls}">${ex.text}</span></div><div class="mobile-product-meta"><span class="badge ${d.stockStatus==="sold_out"?"badge-orange":"badge-green"}">${d.stockStatus==="sold_out"?"庫存已售完":"尚有庫存"}</span><span class="badge ${d.listingStatus==="unlisted"?"badge-gray":"badge-green"}">${d.listingStatus==="unlisted"?"已下架":"上架中"}</span></div><div class="mobile-product-actions"><span class="price">${d.priceText}</span><div class="actions"><button class="small-btn edit-btn" onclick="editProduct(${p.id})">編輯</button><button class="small-btn quick-warehouse-btn" onclick="openQuickWarehouse(${p.id})">更換倉位</button><button class="small-btn delete-btn" onclick="deleteProduct(${p.id})">刪除</button></div></div></div></article>`}).join("");els.productBody.innerHTML=list.map(p=>{const d=getProductDisplayInfo(p),u=p.image_url,img=u?`<img class="thumb" src="${escapeHtml(u)}">`:`<div class="thumb-fallback">${emojiMap[p.category]||"❄️"}</div>`,stock=d.stockStatus==="sold_out"?'<span class="badge badge-orange">庫存已售完</span>':'<span class="badge badge-green">尚有庫存</span>',listing=d.listingStatus==="unlisted"?'<span class="badge badge-gray">已下架</span>':'<span class="badge badge-green">上架中</span>',tag=d.variants.length?`<div class="variant-tag">${d.variants.length} 個口味／規格</div>`:"",ex=getExpiryInfo(d.expiryDate);return`<tr><td><div class="product-cell">${img}<div><div class="pname">${escapeHtml(p.name||"")}</div><div class="pspec">${escapeHtml(p.spec||"")}</div>${tag}</div></div></td><td>${escapeHtml(p.category||"")}</td><td class="price">${d.priceText}</td><td>${escapeHtml(d.warehouseText)}</td><td><div>${formatDateOnly(d.expiryDate)}</div><span class="expiry-badge ${ex.cls}">${ex.text}</span></td><td>${stock}</td><td>${listing}</td><td><div class="actions"><button class="small-btn edit-btn" onclick="editProduct(${p.id})">編輯</button><button class="small-btn quick-warehouse-btn" onclick="openQuickWarehouse(${p.id})">更換倉位</button><button class="small-btn delete-btn" onclick="deleteProduct(${p.id})">刪除</button></div></td></tr>`}).join("")}
+
+// 快速更換倉位：只更新指定商品或口味的 warehouse 欄位
+let quickWarehouseProductId=null;
+let quickWarehouseSaving=false;
+const quickWarehouseUI={backdrop:q("quickWarehouseBackdrop"),product:q("quickWarehouseProduct"),variantField:q("quickWarehouseVariantField"),variant:q("quickWarehouseVariant"),current:q("quickWarehouseCurrent"),select:q("quickWarehouseSelect"),save:q("quickWarehouseSave")};
+warehouseOptions.forEach(name=>quickWarehouseUI.select.add(new Option(name,name)));
+function refreshQuickWarehouseCurrent(){
+  const p=products.find(x=>Number(x.id)===quickWarehouseProductId);
+  if(!p)return;
+  const variants=getVariantsForProduct(p.id);
+  const v=variants.length?variants.find(x=>String(x.id)===quickWarehouseUI.variant.value):null;
+  const current=(v?v.warehouse:p.warehouse)||"";
+  quickWarehouseUI.current.textContent=current||"未設定";
+  if(current&&!warehouseOptions.includes(current))quickWarehouseUI.select.add(new Option(current,current));
+  quickWarehouseUI.select.value=current&&warehouseOptions.includes(current)?current:"";
+  quickWarehouseUI.save.disabled=!quickWarehouseUI.select.value;
+}
+window.openQuickWarehouse=id=>{
+  if(quickWarehouseSaving||productSaving)return;
+  const p=products.find(x=>Number(x.id)===Number(id));if(!p)return;
+  quickWarehouseProductId=Number(id);
+  quickWarehouseUI.product.textContent=p.name||"未命名商品";
+  const variants=getVariantsForProduct(id);
+  quickWarehouseUI.variantField.classList.toggle("hidden",!variants.length);
+  quickWarehouseUI.variant.innerHTML="";
+  variants.forEach(v=>quickWarehouseUI.variant.add(new Option(v.variant_name||`規格 ${v.id}`,String(v.id))));
+  refreshQuickWarehouseCurrent();
+  quickWarehouseUI.backdrop.classList.remove("hidden");
+};
+function closeQuickWarehouse(){if(quickWarehouseSaving)return;quickWarehouseUI.backdrop.classList.add("hidden");quickWarehouseProductId=null}
+q("quickWarehouseClose").addEventListener("click",closeQuickWarehouse);
+q("quickWarehouseCancel").addEventListener("click",closeQuickWarehouse);
+quickWarehouseUI.backdrop.addEventListener("click",e=>{if(e.target===quickWarehouseUI.backdrop)closeQuickWarehouse()});
+quickWarehouseUI.variant.addEventListener("change",refreshQuickWarehouseCurrent);
+quickWarehouseUI.select.addEventListener("change",()=>{quickWarehouseUI.save.disabled=!quickWarehouseUI.select.value||quickWarehouseSaving});
+quickWarehouseUI.save.addEventListener("click",async()=>{
+  if(quickWarehouseSaving||quickWarehouseProductId===null)return;
+  const p=products.find(x=>Number(x.id)===quickWarehouseProductId);if(!p)return;
+  const variants=getVariantsForProduct(p.id);
+  const v=variants.length?variants.find(x=>String(x.id)===quickWarehouseUI.variant.value):null;
+  if(variants.length&&!v)return toast("請先選擇口味／規格");
+  const oldWarehouse=(v?v.warehouse:p.warehouse)||"";
+  const nextWarehouse=quickWarehouseUI.select.value;
+  if(!warehouseOptions.includes(nextWarehouse))return toast("請選擇有效的倉位");
+  if(nextWarehouse===oldWarehouse){closeQuickWarehouse();return}
+  if(!confirm(`確定將「${p.name}${v?"－"+v.variant_name:""}」從「${oldWarehouse||"未設定"}」移到「${nextWarehouse}」嗎？`))return;
+  quickWarehouseSaving=true;quickWarehouseUI.save.disabled=true;quickWarehouseUI.save.textContent="儲存中…";
+  try{
+    const table=v?"product_variants":"products";
+    const rowId=v?v.id:p.id;
+    const {data,error}=await db.from(table).update({warehouse:nextWarehouse}).eq("id",rowId).select("id,warehouse").single();
+    if(error)throw error;
+    if(!data||data.warehouse!==nextWarehouse)throw new Error("資料未確認更新成功");
+    if(v){v.warehouse=nextWarehouse;/* 保持主商品倉位與第一個規格一致 */
+      if(Number(variants[0].id)===Number(v.id)){
+        const {error:syncError}=await db.from("products").update({warehouse:nextWarehouse}).eq("id",p.id);
+        if(syncError)toast("規格倉位已更新，但主商品倉位同步失敗，請重新整理確認");
+      }
+    }else p.warehouse=nextWarehouse;
+    quickWarehouseUI.backdrop.classList.add("hidden");quickWarehouseProductId=null;
+    toast("倉位修改完成");
+    await loadAllData();
+  }catch(err){toast("更換倉位失敗："+(err?.message||"未知錯誤"))}
+  finally{quickWarehouseSaving=false;quickWarehouseUI.save.disabled=false;quickWarehouseUI.save.textContent="確認更換"}
+});
 
 function clearPreviewObjectUrl(){if(previewObjectUrl){URL.revokeObjectURL(previewObjectUrl);previewObjectUrl=""}}
 function showImagePreview(src){els.imagePreview.src=src;els.imagePreviewWrap.classList.remove("hidden")}
