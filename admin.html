@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#4d2f18">
-<title>揪愛買｜商品管理後台</title>
+<title>揪愛買｜商品管理後台 v2.2.2</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--bg:#f7f1e8;--panel:#fffdf9;--line:#e7d8c5;--brown:#4d2f18;--brown2:#765034;--muted:#817367;--green:#5e8b45;--green-bg:#e8f2df;--orange:#c86c29;--orange-bg:#fff0df;--red:#b84f45;--red-bg:#fbe8e5;--gray:#777;--gray-bg:#efefed;--shadow:0 10px 30px rgba(77,47,24,.08)}
@@ -139,10 +139,31 @@
  .table-wrap td:last-child .small-btn{width:100%;min-width:0!important;padding:10px 3px;white-space:normal;line-height:1.3}
  .table-wrap td:last-child .edit-btn{background:var(--brown);color:#fff;border-color:var(--brown);font-size:13px}
 }
+
+/* 2.2.2 強制雙排：桌機與手機均使用相同的 action-row 佈局 */
+#productBody td:last-child .actions,
+#mobileProductList .mobile-product-actions .actions {
+ display:flex!important;flex-direction:column!important;align-items:stretch!important;
+ flex-wrap:nowrap!important;gap:8px!important;width:100%!important;
+}
+#productBody td:last-child .actions > .action-row,
+#mobileProductList .mobile-product-actions .actions > .action-row {
+ display:grid!important;width:100%!important;gap:8px!important;
+ flex:none!important;min-width:0!important;
+}
+#productBody td:last-child .actions > .quick-row,
+#mobileProductList .mobile-product-actions .actions > .quick-row {grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
+#productBody td:last-child .actions > .manage-row,
+#mobileProductList .mobile-product-actions .actions > .manage-row {grid-template-columns:minmax(0,3fr) minmax(0,1fr)!important}
+#productBody td:last-child .action-row > button,
+#mobileProductList .mobile-product-actions .action-row > button {
+ width:100%!important;min-width:0!important;max-width:none!important;
+ white-space:normal!important;line-height:1.35!important;box-sizing:border-box!important;
+}
 </style>
 </head>
 <body>
-<header class="topbar"><div class="top-inner"><div class="brand"><div class="logo">🛒</div><div><h1>揪愛買</h1><p>冷凍現貨管理後台</p></div></div><button id="logoutBtn" class="btn hidden">登出</button></div></header>
+<header class="topbar"><div class="top-inner"><div class="brand"><div class="logo">🛒</div><div><h1>揪愛買</h1><p>冷凍現貨管理後台 · v2.2.2</p></div></div><button id="logoutBtn" class="btn hidden">登出</button></div></header>
 <main class="shell">
 <section id="loginView" class="login-wrap"><div class="card login-card"><div class="login-icon">🔐</div><h2>店家管理登入</h2><p class="sub">此頁僅供揪愛買店家管理使用。<br>請輸入管理員帳號與密碼。</p><form id="loginForm"><div class="field"><label>Email</label><input id="email" type="email" autocomplete="username" placeholder="請輸入管理員 Email" required></div><div class="field"><label>密碼</label><input id="password" type="password" autocomplete="current-password" placeholder="請輸入密碼" required></div><button id="loginBtn" class="primary" type="submit">登入管理後台</button><div id="loginError" class="login-error hidden"></div></form></div></section>
 <section id="adminView" class="hidden">
