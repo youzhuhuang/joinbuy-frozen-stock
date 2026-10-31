@@ -96,6 +96,20 @@
  .mobile-product-actions .actions .delete-btn{flex:0 0 auto;font-size:11px;padding:9px 8px}
 }
 
+
+/* 2.1.2：固定欄位比例，避免更換倉位文字較長而看起來比編輯更大 */
+@media(max-width:700px){
+ .mobile-product-actions .actions{display:grid!important;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,.62fr);gap:6px;width:100%}
+ .mobile-product-actions .actions .small-btn{width:100%;min-width:0!important;max-width:none;box-sizing:border-box;white-space:nowrap}
+ .mobile-product-actions .actions .edit-btn{font-size:14px;padding:12px 5px}
+ .mobile-product-actions .actions .quick-warehouse-btn{font-size:11px;padding:10px 2px}
+ .mobile-product-actions .actions .delete-btn{font-size:11px;padding:10px 2px}
+}
+@media(min-width:701px){
+ .table-wrap .actions .edit-btn{min-width:110px;background:var(--brown);color:#fff;border-color:var(--brown)}
+ .table-wrap .actions .quick-warehouse-btn{padding:7px 8px}
+}
+
 .quick-warehouse-modal{width:min(440px,100%)}
 .quick-warehouse-current{background:#f8f1e8;border-radius:12px;padding:12px;margin-bottom:14px;color:var(--brown2);font-size:13px;line-height:1.7}
 .quick-warehouse-modal .modal-footer button{flex:1}
