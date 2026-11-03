@@ -16,13 +16,13 @@
     </div>
   </header>
   <main class="shell">
-    <section class="intro" aria-label="網站介紹">
-      <div><span class="intro-eyebrow">WELCOME TO JOINBUY</span><h2>今天想吃什麼？<span> ❄️</span></h2><p>冷凍現貨輕鬆找・喜歡的美味不用等</p></div>
-      <div class="intro-decoration" aria-hidden="true">🛍️</div>
+    <section class="intro hidden" id="welcomeSection" aria-label="網站介紹">
+      <div><span class="intro-eyebrow">WELCOME · 揪愛買現貨選物</span><h2>今天想吃什麼？<span> ❄️</span></h2><p>冷凍現貨輕鬆找・喜歡的美味不用等</p></div>
+      <div class="intro-decoration" aria-hidden="true">❄️ ✨</div>
     </section>
     <!-- 第一階段保留原本後台單筆活動邏輯，第二階段才升級多活動輪播 -->
     <section id="activitySection" class="activity-card hidden" aria-label="最新活動">
-      <div id="activityImageWrap" class="activity-image-wrap hidden"><img id="activityImage" class="activity-image" alt="活動圖片"></div>
+      <div id="activityImageWrap" class="activity-image-wrap hidden"><img id="activityImage" class="activity-image" alt="活動圖片"><span id="activityImageHint" class="activity-image-hint hidden">點擊圖片查看活動商品 <span aria-hidden="true">↗</span></span></div>
       <div class="activity-main">
         <span id="activityBadge" class="activity-badge">🎉 最新活動</span>
         <h2 id="activityTitle">揪愛買活動專區</h2>
@@ -32,14 +32,14 @@
       </div>
     </section>
     <section class="category-feature" aria-labelledby="quickCategoryTitle">
-      <div class="section-title-row"><div><span class="section-kicker">EXPLORE</span><h2 id="quickCategoryTitle">✨ 快速找分類</h2></div><span class="section-aside">點選分類快速找商品</span></div>
+      <div class="section-title-row"><div><span class="section-kicker">DISCOVER · 好物分類</span><h2 id="quickCategoryTitle">🛍️ 快速找分類 <span class="title-sparkle">✦</span></h2></div><span class="section-aside">點選分類快速找商品</span></div>
       <div id="categoryIcons" class="category-icons" aria-label="商品快速分類"></div>
     </section>
     <section class="controls" id="productControls" aria-label="搜尋與篩選">
       <label class="search"><span class="search-symbol" aria-hidden="true">⌕</span><input id="searchInput" type="search" placeholder="搜尋商品名稱、規格或口味" aria-label="搜尋商品名稱、規格或口味"></label>
       <div class="category-select-wrap"><label for="categorySelect">商品分類</label><select id="categorySelect"><option value="全部">全部分類</option></select></div>
     </section>
-    <section class="heading" id="productsHeading"><div><span class="section-kicker">FROZEN GOODS</span><h3 id="headingTitle">❄️ 全部現貨</h3><p id="countText">讀取商品中...</p></div><button id="refreshBtn" class="refresh" type="button">↻ 重新整理</button></section>
+    <section class="heading" id="productsHeading"><div><span class="section-kicker">FROZEN PICKS · 現貨精選</span><h3 id="headingTitle">❄️ 全部現貨</h3><p id="countText">讀取商品中...</p></div><button id="refreshBtn" class="refresh" type="button">↻ 重新整理</button></section>
     <section id="loading" class="state"><div class="spinner"></div><p>正在讀取最新現貨...</p></section>
     <section id="errorState" class="state hidden"><div class="state-icon">⚠️</div><h3>暫時無法讀取商品</h3><p id="errorText">請稍後重新整理。</p><button class="retry" id="retryBtn" type="button">再試一次</button></section>
     <section id="emptyState" class="state hidden"><div class="state-icon">🧊</div><h3>目前沒有符合的商品</h3><p>可以換個分類或搜尋關鍵字看看。</p></section>

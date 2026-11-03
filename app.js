@@ -158,6 +158,11 @@ function selectCategory(category, scroll=true){
   renderProducts();
   if(scroll) document.getElementById('productsHeading')?.scrollIntoView({behavior:'smooth',block:'start'});
 }
+function shortCategoryLabel(name){
+  if(name === '全部') return '全部分類';
+  return name.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu,'')
+    .replace(/專區/g,'').replace(/\s+/g,'').trim() || name;
+}
 function renderCategoryIcons(){
   const root=document.getElementById('categoryIcons');
   if(!root)return;
@@ -166,7 +171,7 @@ function renderCategoryIcons(){
   const items=[...shown.map(name=>({name})),{name:'全部',all:true}];
   root.innerHTML=items.map(({name,all})=>{
     const visual=all?{icon:'▦',tone:'neutral'}:categoryVisual(name);
-    const label=all?'全部分類':name;
+    const label=shortCategoryLabel(name);
     const selected=activeCategory===name;
     return `<button type="button" class="category-icon-item ${selected?'selected':''}" data-category="${escapeHtml(name)}" aria-pressed="${selected}"><span class="category-icon-art tone-${visual.tone}" aria-hidden="true">${visual.icon}</span><span class="category-icon-name">${escapeHtml(label)}</span></button>`;
   }).join('');
@@ -700,6 +705,12 @@ document.addEventListener(
 async function loadActivity(){
   const activitySection =
     document.getElementById('activitySection');
+  const welcomeSection = document.getElementById('welcomeSection');
+  const imageHint = document.getElementById('activityImageHint');
+  function toggleWelcome(hasActivity){
+    welcomeSection?.classList.toggle('hidden', hasActivity);
+    activitySection?.classList.toggle('hidden', !hasActivity);
+  }
 
   const activityBadge =
     document.getElementById('activityBadge');
@@ -761,7 +772,8 @@ async function loadActivity(){
       activityButton.onclick = null;
     }
 
-    activitySection.classList.remove('hidden');
+    imageHint?.classList.add('hidden');
+    toggleWelcome(false);
   }
 
   const { data, error } =
@@ -903,7 +915,34 @@ async function loadActivity(){
     }
   }
 
-  activitySection.classList.remove('hidden');
+  const targetCategory = data.target_category?.trim();
+  const jumpToActivity = () => {
+    if(!targetCategory) return;
+    const hasCategory = Array.from(els.categorySelect.options)
+      .some(option => option.value === targetCategory);
+    if(!hasCategory) return;
+    els.search.value = '';
+    selectCategory(targetCategory, true);
+  };
+  const imageClickable = Boolean(targetCategory);
+  if(activityImageWrap){
+    activityImageWrap.classList.toggle('is-clickable', imageClickable && Boolean(data.image_url));
+    activityImageWrap.onclick = imageClickable ? jumpToActivity : null;
+    activityImageWrap.onkeydown = imageClickable ? event => {
+      if(event.key === 'Enter' || event.key === ' '){ event.preventDefault(); jumpToActivity(); }
+    } : null;
+    if(imageClickable && data.image_url){
+      activityImageWrap.setAttribute('role','button');
+      activityImageWrap.setAttribute('tabindex','0');
+      activityImageWrap.setAttribute('aria-label','查看活動商品');
+    }else{
+      activityImageWrap.removeAttribute('role');
+      activityImageWrap.removeAttribute('tabindex');
+      activityImageWrap.removeAttribute('aria-label');
+    }
+  }
+  imageHint?.classList.toggle('hidden', !imageClickable || !data.image_url);
+  toggleWelcome(true);
 }
 loadActivity();
 loadProducts();
