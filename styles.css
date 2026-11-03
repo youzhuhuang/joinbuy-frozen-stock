@@ -696,3 +696,31 @@ body{
   .activity-card .activity-details {margin-top:5px}
   .activity-image-hint {right:9px;bottom:9px;font-size:10px;padding:7px 10px}
 }
+
+
+/* ===== 第三階段：活動區域縮小，圖片不再重複提供跳轉入口 ===== */
+.activity-card { margin-bottom:12px; border-radius:19px; }
+.activity-card .activity-image-wrap { cursor:default; }
+.activity-card .activity-image-hint { display:none !important; }
+.activity-card .activity-main { padding:15px 19px; }
+.activity-card .activity-badge { font-size:10px; padding:4px 9px; }
+.activity-card h2 { font-size:19px; margin:6px 0 4px; }
+.activity-card .activity-summary { font-size:12px; line-height:1.5; -webkit-line-clamp:1; }
+.activity-card .activity-period { margin-top:6px; font-size:10px; padding:4px 8px; }
+.activity-card .activity-details { margin-top:4px; font-size:11px; }
+.activity-card .activity-details summary { padding:4px 0; }
+.activity-card .activity-button { margin-top:8px; padding:9px 16px; font-size:12px; }
+@media (min-width:760px) {
+  .activity-card:has(.activity-image-wrap:not(.hidden)) { grid-template-columns:minmax(0,39%) minmax(0,61%); }
+  .activity-card .activity-image-wrap:not(.hidden) { max-height:210px; }
+  .activity-card .activity-image-wrap:not(.hidden) .activity-image { max-height:210px; }
+  .activity-card .activity-main { padding:14px 22px; }
+}
+@media (max-width:759px) {
+  .activity-card .activity-image-wrap:not(.hidden) { max-height:155px; }
+  .activity-card .activity-image-wrap:not(.hidden) .activity-image { max-height:155px; }
+  .activity-card .activity-main { padding:11px 14px 13px; }
+  .activity-card h2 { font-size:17px; }
+  .activity-card .activity-summary { font-size:11px; }
+  .activity-card .activity-button { margin-top:8px; padding:10px 12px; }
+}

@@ -906,6 +906,7 @@ async function loadActivity(){
           return;
         }
 
+        els.search.value = '';
         categorySelect.value =
           targetCategory;
 
@@ -927,33 +928,16 @@ async function loadActivity(){
     }
   }
 
-  const targetCategory = data.target_category?.trim();
-  const jumpToActivity = () => {
-    if(!targetCategory) return;
-    const hasCategory = Array.from(els.categorySelect.options)
-      .some(option => option.value === targetCategory);
-    if(!hasCategory) return;
-    els.search.value = '';
-    selectCategory(targetCategory, true);
-  };
-  const imageClickable = Boolean(targetCategory);
+  // 第三階段：圖片只負責展示，活動跳轉統一由下方按鈕操作。
   if(activityImageWrap){
-    activityImageWrap.classList.toggle('is-clickable', imageClickable && Boolean(data.image_url));
-    activityImageWrap.onclick = imageClickable ? jumpToActivity : null;
-    activityImageWrap.onkeydown = imageClickable ? event => {
-      if(event.key === 'Enter' || event.key === ' '){ event.preventDefault(); jumpToActivity(); }
-    } : null;
-    if(imageClickable && data.image_url){
-      activityImageWrap.setAttribute('role','button');
-      activityImageWrap.setAttribute('tabindex','0');
-      activityImageWrap.setAttribute('aria-label','查看活動商品');
-    }else{
-      activityImageWrap.removeAttribute('role');
-      activityImageWrap.removeAttribute('tabindex');
-      activityImageWrap.removeAttribute('aria-label');
-    }
+    activityImageWrap.classList.remove('is-clickable');
+    activityImageWrap.onclick = null;
+    activityImageWrap.onkeydown = null;
+    activityImageWrap.removeAttribute('role');
+    activityImageWrap.removeAttribute('tabindex');
+    activityImageWrap.removeAttribute('aria-label');
   }
-  imageHint?.classList.toggle('hidden', !imageClickable || !data.image_url);
+  imageHint?.classList.add('hidden');
   toggleWelcome(true);
 }
 loadActivity();
