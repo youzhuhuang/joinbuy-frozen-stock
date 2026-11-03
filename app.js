@@ -720,6 +720,8 @@ async function loadActivity(){
 
   const activityDescription =
     document.getElementById('activityDescription');
+  const activitySummary = document.getElementById('activitySummary');
+  const activityDetails = document.getElementById('activityDetails');
 
   const activityImageWrap =
     document.getElementById('activityImageWrap');
@@ -748,10 +750,9 @@ async function loadActivity(){
         '今天想吃什麼？';
     }
 
-    if(activityDescription){
-      activityDescription.textContent =
-        '商品依門市實際庫存為主，售完為止。';
-    }
+    if(activityDescription) activityDescription.textContent = '';
+    if(activitySummary){ activitySummary.textContent = ''; activitySummary.classList.add('hidden'); }
+    if(activityDetails){ activityDetails.open = false; activityDetails.classList.add('hidden'); }
 
     if(activityImageWrap){
       activityImageWrap.classList.add('hidden');
@@ -826,8 +827,19 @@ async function loadActivity(){
   }
 
   if(activityDescription){
-    activityDescription.textContent =
-      data.description || '';
+    activityDescription.textContent = data.description || '';
+  }
+  // 首頁只顯示一行重點，原始活動內容完整保留在可展開的說明中。
+  const fullActivityText = String(data.description || '').trim();
+  const lines = fullActivityText.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  const brief = lines.find(line => line !== (data.title || '').trim() && !/^活動期間[:：]/.test(line)) || '';
+  if(activitySummary){
+    activitySummary.textContent = brief;
+    activitySummary.classList.toggle('hidden', !brief);
+  }
+  if(activityDetails){
+    activityDetails.open = false;
+    activityDetails.classList.toggle('hidden', !fullActivityText);
   }
 
   if(activityImageWrap && activityImage){

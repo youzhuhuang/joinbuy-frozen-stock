@@ -20,13 +20,14 @@
       <div><span class="intro-eyebrow">WELCOME · 揪愛買現貨選物</span><h2>今天想吃什麼？<span> ❄️</span></h2><p>冷凍現貨輕鬆找・喜歡的美味不用等</p></div>
       <div class="intro-decoration" aria-hidden="true">❄️ ✨</div>
     </section>
-    <!-- 第一階段保留原本後台單筆活動邏輯，第二階段才升級多活動輪播 -->
+    <!-- 第二階段：單筆活動精簡呈現；保留既有後台資料與分類跳轉 -->
     <section id="activitySection" class="activity-card hidden" aria-label="最新活動">
       <div id="activityImageWrap" class="activity-image-wrap hidden"><img id="activityImage" class="activity-image" alt="活動圖片"><span id="activityImageHint" class="activity-image-hint hidden">點擊圖片查看活動商品 <span aria-hidden="true">↗</span></span></div>
       <div class="activity-main">
         <span id="activityBadge" class="activity-badge">🎉 最新活動</span>
         <h2 id="activityTitle">揪愛買活動專區</h2>
-        <p id="activityDescription"></p>
+        <p id="activitySummary" class="activity-summary hidden"></p>
+        <details id="activityDetails" class="activity-details hidden"><summary>活動詳細說明與注意事項 <span aria-hidden="true">⌄</span></summary><p id="activityDescription"></p></details>
         <div id="activityPeriod" class="activity-period hidden"></div>
         <button id="activityButton" class="activity-button hidden" type="button">查看活動商品</button>
       </div>
