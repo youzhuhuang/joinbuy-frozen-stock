@@ -745,3 +745,61 @@ body{
 @media(min-width:760px){.activity-carousel{padding:13px 20px 12px}.activity-slide{max-height:285px}.activity-slide img{max-height:285px}.activity-slide-prompt{font-size:12px}}
 @media(max-width:600px){.activity-carousel{padding:10px;border-radius:16px}.activity-carousel-heading{font-size:12px}.activity-slide{max-height:190px}.activity-slide img{max-height:190px}.activity-slide-prompt{right:6px;bottom:6px;font-size:10px;padding:6px 9px}.activity-arrow{width:26px;height:36px;font-size:25px}.activity-modal-content{padding:24px 18px 20px}}
 @media(prefers-reduced-motion:reduce){.activity-slide,.activity-arrow{transition:none}}
+
+
+/* 第四階段視覺微調：活動圖片完整顯示，兩側以同圖柔和背景填滿 */
+.activity-carousel-stage{max-width:none}
+.activity-slide{
+  isolation:isolate;
+  height:clamp(170px,24vw,265px);
+  min-height:0;
+  max-height:none;
+  background-color:#f9f0e7;
+  background-image:linear-gradient(#fff7ee55,#fff7ee55),var(--activity-bg,none);
+  background-position:center;
+  background-size:cover;
+}
+.activity-slide::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  background:linear-gradient(90deg,#fff8f055,transparent 23%,transparent 77%,#fff8f055);
+  pointer-events:none;
+}
+.activity-slide img{
+  position:relative;
+  z-index:1;
+  display:block;
+  width:auto;
+  max-width:100%;
+  height:100%;
+  max-height:none;
+  object-fit:contain;
+  box-shadow:0 0 28px #3f271a22;
+}
+.activity-slide-prompt{z-index:2}
+.activity-slide-fallback{position:relative;z-index:1}
+.category-feature{padding:14px 18px 13px;margin:10px 0;border-radius:21px}
+.category-feature .section-title-row{margin-bottom:9px}
+.category-feature .section-title-row h2{font-size:18px}
+.category-icons{gap:8px 6px}
+.category-icon-item{gap:5px}
+.category-icon-art{width:min(100%,58px);font-size:30px;border-radius:17px}
+.category-icon-name{font-size:11px}
+@media(min-width:760px){
+  .activity-slide{height:clamp(195px,23vw,265px);max-height:none}
+  .activity-slide img{max-height:none}
+  .category-feature{padding:15px 23px 14px}
+  .category-icons{gap:9px}
+  .category-icon-art{width:min(100%,61px);font-size:31px}
+  .category-icon-name{font-size:11px}
+}
+@media(max-width:759px){
+  .activity-slide{height:clamp(145px,38vw,210px);max-height:none}
+  .activity-slide img{max-height:none}
+  .category-feature{padding:12px 10px 11px;border-radius:19px}
+  .category-icons{gap:9px 4px}
+  .category-icon-art{width:min(100%,55px);font-size:28px;border-radius:16px}
+  .category-icon-name{font-size:10px}
+}

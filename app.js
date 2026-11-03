@@ -734,7 +734,15 @@ function renderCarousel(){
  const a=carouselActivities[carouselIndex];if(!a)return;
  activityUI.image.classList.toggle('hidden',!a.image_url);
  activityUI.fallback.classList.toggle('hidden',!!a.image_url);
- if(a.image_url){activityUI.image.src=a.image_url;activityUI.image.alt=a.title||'活動圖片';}else{activityUI.image.removeAttribute('src');activityUI.fallback.textContent=a.title||'最新優惠活動';}
+ if(a.image_url){
+  activityUI.image.src=a.image_url;
+  activityUI.image.alt=a.title||'活動圖片';
+  activityUI.slide.style.backgroundImage=`linear-gradient(#fff7ee88,#fff7ee88), url(${JSON.stringify(a.image_url)})`;
+}else{
+  activityUI.image.removeAttribute('src');
+  activityUI.slide.style.backgroundImage='';
+  activityUI.fallback.textContent=a.title||'最新優惠活動';
+}
  activityUI.slide.setAttribute('aria-label',`查看「${a.title||'活動'}」詳細說明與注意事項`);
  activityUI.counter.textContent=carouselActivities.length>1?`${carouselIndex+1} / ${carouselActivities.length}`:'';
  const multi=carouselActivities.length>1;
