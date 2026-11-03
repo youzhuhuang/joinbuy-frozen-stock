@@ -724,3 +724,24 @@ body{
   .activity-card .activity-summary { font-size:11px; }
   .activity-card .activity-button { margin-top:8px; padding:10px 12px; }
 }
+
+/* 第四階段：精簡單圖輪播（覆蓋舊活動樣式） */
+.activity-carousel{margin:0 auto 15px;max-width:100%;border:1px solid #e8d6c0;border-radius:20px;background:#fffdf9;padding:12px 14px 10px;box-shadow:0 8px 24px rgba(76,47,24,.07)}
+.activity-carousel-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;font-weight:800;color:#68452f;margin-bottom:9px}
+#activityCounter{font-size:11px;color:#9d8774;font-weight:700}
+.activity-carousel-stage{position:relative;max-width:900px;margin:auto}
+.activity-slide{position:relative;display:flex;align-items:center;justify-content:center;width:100%;min-height:110px;max-height:310px;padding:0;overflow:hidden;border:0;border-radius:14px;background:#f9f0e7;cursor:pointer}
+.activity-slide img{display:block;width:100%;height:auto;max-height:310px;object-fit:contain}
+.activity-slide-fallback{padding:45px 20px;font-size:22px;font-weight:900;color:#73452c;text-align:center}
+.activity-slide-prompt{position:absolute;right:10px;bottom:10px;padding:7px 12px;border-radius:999px;background:rgba(77,47,24,.88);color:white;font-size:11px;font-weight:800;box-shadow:0 3px 9px #0002}
+.activity-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:2;border:0;width:33px;height:44px;background:rgba(255,253,249,.92);color:#65432e;font-size:30px;border-radius:10px;cursor:pointer;box-shadow:0 2px 10px #0002}
+.activity-arrow.prev{left:7px}.activity-arrow.next{right:7px}
+.activity-dots{display:flex;justify-content:center;align-items:center;gap:7px;margin-top:10px;min-height:5px}
+.activity-dot{width:7px;height:7px;border:0;border-radius:50%;background:#ddc9b4;padding:0;cursor:pointer}.activity-dot.active{width:18px;border-radius:7px;background:#80543b}
+.activity-modal-backdrop{position:fixed;inset:0;z-index:110;background:rgba(36,23,15,.55);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.activity-modal{position:relative;width:min(520px,100%);max-height:min(90vh,850px);overflow:auto;background:#fffdf9;border-radius:22px;box-shadow:0 20px 65px #0003}
+.activity-modal-close{position:sticky;float:right;top:12px;right:12px;z-index:2;width:36px;height:36px;margin:12px 12px -48px 0;border:0;border-radius:50%;background:#f5e8d9;color:#573822;font-size:24px;cursor:pointer}
+.activity-modal-content{padding:28px 23px 24px}.activity-modal-badge{display:inline-block;padding:5px 10px;border-radius:20px;background:#fff0df;color:#a45e34;font-size:12px;font-weight:800}.activity-modal h2{margin:13px 0;color:#4d2f18;font-size:23px;line-height:1.4}.activity-modal p{white-space:pre-wrap;line-height:1.8;color:#665143;font-size:14px}.activity-modal-period{padding:10px 12px;background:#f8f0e7;border-radius:11px;font-weight:700}.activity-modal-products{width:100%;border:0;border-radius:12px;background:#65432e;color:white;padding:13px;font-weight:900;cursor:pointer;margin-top:12px}body.activity-modal-open{overflow:hidden}
+@media(min-width:760px){.activity-carousel{padding:13px 20px 12px}.activity-slide{max-height:285px}.activity-slide img{max-height:285px}.activity-slide-prompt{font-size:12px}}
+@media(max-width:600px){.activity-carousel{padding:10px;border-radius:16px}.activity-carousel-heading{font-size:12px}.activity-slide{max-height:190px}.activity-slide img{max-height:190px}.activity-slide-prompt{right:6px;bottom:6px;font-size:10px;padding:6px 9px}.activity-arrow{width:26px;height:36px;font-size:25px}.activity-modal-content{padding:24px 18px 20px}}
+@media(prefers-reduced-motion:reduce){.activity-slide,.activity-arrow{transition:none}}
