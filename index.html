@@ -3,74 +3,143 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#faf4eb">
-  <meta name="description" content="揪愛買冷凍現貨專區｜快速查看門市現貨、分類、價格與商品資訊。">
+  <meta name="theme-color" content="#f7f1e8">
   <title>揪愛買｜冷凍現貨專區</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header class="topbar" id="pageTop">
+  <header class="topbar">
     <div class="brand">
-      <img class="brand-logo" src="logo.jpg" alt="揪愛買官方 Logo" width="54" height="54">
-      <div class="brand-copy"><h1>揪愛買</h1><p>冷凍現貨專區 <span class="brand-sparkle">✦ 現貨快速找</span></p></div>
+      <div class="logo">🛒</div>
+      <div>
+        <h1>揪愛買</h1>
+        <p>冷凍現貨專區</p>
+      </div>
     </div>
   </header>
+
   <main class="shell">
-    <section class="intro hidden" id="welcomeSection" aria-label="網站介紹">
-      <div><span class="intro-eyebrow">WELCOME · 揪愛買現貨選物</span><h2>今天想吃什麼？<span> ❄️</span></h2><p>冷凍現貨輕鬆找・喜歡的美味不用等</p></div>
-      <div class="intro-decoration" aria-hidden="true">❄️ ✨</div>
-    </section>
-    <!-- 第四階段：單張完整圖片輪播，點擊圖片開啟詳情 -->
-    <section id="activitySection" class="activity-carousel hidden" aria-label="最新優惠活動">
-      <div class="activity-carousel-heading"><span>🎀 揪愛買・優惠活動</span><span id="activityCounter" aria-live="polite"></span></div>
-      <div class="activity-carousel-stage">
-        <button id="activityPrev" class="activity-arrow prev hidden" type="button" aria-label="上一個活動">‹</button>
-        <button id="activitySlide" class="activity-slide" type="button" aria-label="查看活動詳細說明">
-          <img id="activitySlideImage" alt="活動圖片" class="hidden">
-          <span id="activitySlideFallback" class="activity-slide-fallback hidden"></span>
-          <span class="activity-slide-prompt">點擊圖片查看活動詳情</span>
-        </button>
-        <button id="activityNext" class="activity-arrow next hidden" type="button" aria-label="下一個活動">›</button>
+    <!-- 後台活動管理會控制此區塊 -->
+<section id="activitySection" class="activity-card hidden">
+
+  <div id="activityImageWrap" class="activity-image-wrap hidden">
+    <img
+      id="activityImage"
+      class="activity-image"
+      alt="活動圖片"
+    >
+  </div>
+
+  <div class="activity-main">
+    <span
+      id="activityBadge"
+      class="activity-badge"
+    >
+      🎉 最新活動
+    </span>
+
+    <h2 id="activityTitle">
+      揪愛買活動專區
+    </h2>
+
+    <p id="activityDescription"></p>
+
+    <div
+      id="activityPeriod"
+      class="activity-period hidden"
+    ></div>
+
+    <button
+      id="activityButton"
+      class="activity-button hidden"
+      type="button"
+    >
+      查看活動商品
+    </button>
+  </div>
+
+</section>
+
+    <section class="controls">
+      <label class="search">
+        <span>⌕</span>
+        <input id="searchInput" type="search" placeholder="搜尋商品名稱或口味">
+      </label>
+
+      <div class="category-select-wrap">
+        <label for="categorySelect">商品分類</label>
+        <select id="categorySelect">
+          <option value="全部">全部分類</option>
+        </select>
       </div>
-      <div id="activityDots" class="activity-dots" aria-label="活動輪播切換"></div>
     </section>
-    <div id="activityModal" class="activity-modal-backdrop hidden" aria-hidden="true">
-      <section class="activity-modal" role="dialog" aria-modal="true" aria-labelledby="activityModalTitle">
-        <button id="activityModalClose" class="activity-modal-close" type="button" aria-label="關閉活動說明">×</button>
-        <div class="activity-modal-content">
-          <span id="activityModalBadge" class="activity-modal-badge"></span>
-          <h2 id="activityModalTitle"></h2>
-          <p id="activityModalDescription"></p>
-          <p id="activityModalPeriod" class="activity-modal-period hidden"></p>
-          <button id="activityModalProducts" class="activity-modal-products hidden" type="button">查看活動商品</button>
-        </div>
-      </section>
-    </div>
-    <section class="controls" id="productControls" aria-label="搜尋與篩選">
-      <label class="search"><span class="search-symbol" aria-hidden="true">⌕</span><input id="searchInput" type="search" placeholder="搜尋商品名稱、規格或口味" aria-label="搜尋商品名稱、規格或口味"></label>
-      <div class="category-select-wrap"><label for="categorySelect">商品分類</label><select id="categorySelect"><option value="全部">全部分類</option></select></div>
+
+    <section class="heading">
+      <div>
+        <h3 id="headingTitle">全部現貨</h3>
+        <p id="countText">讀取商品中...</p>
+      </div>
+      <button id="refreshBtn" class="refresh" type="button">重新整理</button>
     </section>
-    <section class="heading" id="productsHeading"><div><span class="section-kicker">FROZEN PICKS · 現貨精選</span><h3 id="headingTitle">❄️ 全部現貨</h3><p id="countText">讀取商品中...</p></div><button id="refreshBtn" class="refresh" type="button">↻ 重新整理</button></section>
-    <section id="loading" class="state"><div class="spinner"></div><p>正在讀取最新現貨...</p></section>
-    <section id="errorState" class="state hidden"><div class="state-icon">⚠️</div><h3>暫時無法讀取商品</h3><p id="errorText">請稍後重新整理。</p><button class="retry" id="retryBtn" type="button">再試一次</button></section>
-    <section id="emptyState" class="state hidden"><div class="state-icon">🧊</div><h3>目前沒有符合的商品</h3><p>可以換個分類或搜尋關鍵字看看。</p></section>
-    <section id="grid" class="grid hidden" aria-label="商品列表"></section>
+
+    <section id="loading" class="state">
+      <div class="spinner"></div>
+      <p>正在讀取最新現貨...</p>
+    </section>
+
+    <section id="errorState" class="state hidden">
+      <div class="state-icon">⚠️</div>
+      <h3>暫時無法讀取商品</h3>
+      <p id="errorText">請稍後重新整理。</p>
+      <button class="retry" id="retryBtn">再試一次</button>
+    </section>
+
+    <section id="emptyState" class="state hidden">
+      <div class="state-icon">🧊</div>
+      <h3>目前沒有符合的商品</h3>
+      <p>可以換個分類或搜尋關鍵字看看。</p>
+    </section>
+
+    <section id="grid" class="grid hidden"></section>
   </main>
-  <footer>🛍️ 揪愛買｜冷凍現貨專區 <span>商品資訊與庫存依門市現場為主</span></footer>
+
+  <footer>揪愛買｜冷凍現貨專區</footer>
+
   <div id="detailModal" class="detail-backdrop hidden" aria-hidden="true">
     <article class="detail-modal" role="dialog" aria-modal="true" aria-labelledby="detailName">
       <button id="detailCloseBtn" class="detail-close" type="button" aria-label="關閉">×</button>
       <div id="detailMedia" class="detail-media"></div>
-      <div class="detail-content"><div class="detail-topline"><span id="detailCategory" class="detail-category"></span><span id="detailStock" class="detail-stock"></span></div>
-        <h2 id="detailName" class="detail-name"></h2><div id="detailPrice" class="detail-price"></div>
-        <div class="detail-info"><div class="detail-row"><span>規格</span><strong id="detailSpec"></strong></div><div class="detail-row"><span>商品效期</span><strong id="detailExpiry"></strong></div></div>
-        <section id="detailVariants" class="detail-variants hidden"><h3>口味／規格選擇</h3><div id="detailVariantList" class="detail-variant-list"></div></section>
-        <section class="detail-description-box"><h3>商品介紹</h3><p id="detailDescription"></p></section><p class="detail-note">商品資訊及庫存依門市現場實際狀況為主。</p>
+      <div class="detail-content">
+        <div class="detail-topline">
+          <span id="detailCategory" class="detail-category"></span>
+          <span id="detailStock" class="detail-stock"></span>
+        </div>
+        <h2 id="detailName" class="detail-name"></h2>
+        <div id="detailPrice" class="detail-price"></div>
+        <div class="detail-info">
+          <div class="detail-row"><span>規格</span><strong id="detailSpec"></strong></div>
+          <div class="detail-row"><span>商品效期</span><strong id="detailExpiry"></strong></div>
+        </div>
+        <section id="detailVariants" class="detail-variants hidden">
+          <h3>口味／規格選擇</h3>
+          <div id="detailVariantList" class="detail-variant-list"></div>
+        </section>
+        <section class="detail-description-box">
+          <h3>商品介紹</h3>
+          <p id="detailDescription"></p>
+        </section>
+        <p class="detail-note">商品資訊及庫存依門市現場實際狀況為主。</p>
       </div>
     </article>
   </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>window.JOINBUY_CONFIG={supabaseUrl:"https://gwrtxzaqvpawytmftutt.supabase.co",supabaseKey:"sb_publishable_3npPxEjVJEr6zL0DodRoIQ_MTu4TPy0"};</script>
+  <script>
+    window.JOINBUY_CONFIG = {
+      supabaseUrl: "https://gwrtxzaqvpawytmftutt.supabase.co",
+      supabaseKey: "sb_publishable_3npPxEjVJEr6zL0DodRoIQ_MTu4TPy0"
+    };
+  </script>
   <script src="app.js"></script>
 </body>
 </html>
