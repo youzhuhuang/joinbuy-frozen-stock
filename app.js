@@ -722,7 +722,7 @@ function renderCarousel(){
  activityUI.image.classList.toggle('hidden',!a.image_url);
  activityUI.fallback.classList.toggle('hidden',!!a.image_url);
  if(a.image_url){
-  activityUI.image.src=a.image_url;
+  activityUI.image.src=(a.title||'').includes('熱銷商品') && a.image_url ? 'activity-banner-95.jpg' : a.image_url;
   activityUI.image.alt=a.title||'活動圖片';
   activityUI.slide.style.backgroundImage='none';
 }else{

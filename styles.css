@@ -873,3 +873,12 @@ body{
 .activity-slide-prompt{z-index:2}
 .category-feature{display:none!important}
 @media(max-width:759px){.activity-carousel{padding:8px!important}.activity-slide{height:auto!important;max-height:none!important}.activity-slide img{max-height:none!important}}
+
+/* 2026-11-04 橫式活動素材：寬度自適應，高度由橫幅原比例決定。 */
+.activity-carousel-stage{width:100%!important}
+.activity-slide{display:block!important;width:100%!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:hidden!important;background:#fff!important}
+.activity-slide img{display:block!important;width:100%!important;height:auto!important;max-height:none!important;max-width:100%!important;object-fit:contain!important}
+.activity-slide::before{display:none!important}
+/* 活動素材已包含「點擊圖片查看活動詳情」，避免重複標籤 */
+.activity-slide-prompt{display:none!important}
+.category-feature{display:none!important}
