@@ -134,50 +134,6 @@ function getProductDisplayInfo(product){
   };
 }
 
-// 2.0 快速分類：依目前已上架商品的分類自動建立，未辨識分類使用通用圖示。
-const categoryVisuals = [
-  {words:['餃','小籠包','水餃'],icon:'🥟',tone:'peach'},
-  {words:['飲品','飲料','果汁','冰沙','茶飲'],icon:'🥤',tone:'pink'},
-  {words:['早餐','麵包','吐司','饅頭'],icon:'🍞',tone:'butter'},
-  {words:['湯底','火鍋','鍋物','鍋料'],icon:'🍲',tone:'mint'},
-  {words:['乳製','起司','奶油','優格'],icon:'🧀',tone:'butter'},
-  {words:['醬料','調味'],icon:'🥫',tone:'lavender'},
-  {words:['熟食','料理','滷味'],icon:'🍱',tone:'peach'},
-  {words:['海鮮','魚'],icon:'🦐',tone:'mint'},
-  {words:['肉品','牛肉','豬肉','雞肉'],icon:'🥩',tone:'pink'},
-  {words:['甜點','點心','蛋糕'],icon:'🍰',tone:'lavender'},
-  {words:['蔬食','蔬菜','豆製'],icon:'🥬',tone:'mint'}
-];
-function categoryVisual(category){
-  return categoryVisuals.find(v => v.words.some(word => category.includes(word))) || {icon:'🧊',tone:'lavender'};
-}
-function selectCategory(category, scroll=true){
-  activeCategory=category;
-  els.categorySelect.value=category;
-  renderCategoryIcons();
-  renderProducts();
-  if(scroll) document.getElementById('productsHeading')?.scrollIntoView({behavior:'smooth',block:'start'});
-}
-function shortCategoryLabel(name){
-  if(name === '全部') return '全部分類';
-  return name.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu,'')
-    .replace(/專區/g,'').replace(/\s+/g,'').trim() || name;
-}
-function renderCategoryIcons(){
-  const root=document.getElementById('categoryIcons');
-  if(!root)return;
-  const categories=[...new Set(allProducts.map(p=>p.category).filter(Boolean))];
-  const shown=categories.slice(0,7);
-  const items=[...shown.map(name=>({name})),{name:'全部',all:true}];
-  root.innerHTML=items.map(({name,all})=>{
-    const visual=all?{icon:'▦',tone:'neutral'}:categoryVisual(name);
-    const label=shortCategoryLabel(name);
-    const selected=activeCategory===name;
-    return `<button type="button" class="category-icon-item ${selected?'selected':''}" data-category="${escapeHtml(name)}" aria-pressed="${selected}"><span class="category-icon-art tone-${visual.tone}" aria-hidden="true">${visual.icon}</span><span class="category-icon-name">${escapeHtml(label)}</span></button>`;
-  }).join('');
-  root.querySelectorAll('[data-category]').forEach(button=>button.addEventListener('click',()=>selectCategory(button.dataset.category)));
-}
-
 function renderCategorySelect(){
   const categories = [
     '全部',
@@ -205,7 +161,6 @@ function renderCategorySelect(){
   });
 
   els.categorySelect.value = activeCategory;
-  renderCategoryIcons();
 }
 
 function renderProducts(){

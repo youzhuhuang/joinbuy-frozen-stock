@@ -803,3 +803,26 @@ body{
   .category-icon-art{width:min(100%,55px);font-size:28px;border-radius:16px}
   .category-icon-name{font-size:10px}
 }
+
+/* 第四階段修正：活動主圖等比例放大鋪滿，不使用模糊背景；移除快速分類 */
+.category-feature{display:none!important}
+.activity-carousel-stage{max-width:none}
+.activity-slide{
+  height:clamp(170px,24vw,265px);
+  background:#f9f0e7!important;
+  background-image:none!important;
+}
+.activity-slide::before{display:none!important}
+.activity-slide img{
+  display:block;
+  width:100%;
+  height:100%;
+  max-width:none;
+  max-height:none;
+  object-fit:cover;
+  object-position:center;
+  box-shadow:none;
+}
+@media(max-width:759px){
+  .activity-slide{height:clamp(145px,38vw,210px)}
+}
