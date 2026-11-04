@@ -134,6 +134,37 @@ function getProductDisplayInfo(product){
   };
 }
 
+// 將分類名稱轉為可比對的格式，保留原本的分類文字與資料。
+function normalizeCategoryName(value){
+  return String(value || '')
+    .normalize('NFKC')
+    .replace(/[\p{Extended_Pictographic}\p{Emoji_Component}\p{Variation_Selector}]/gu, '')
+    .replace(/[\s\p{Punctuation}\p{Symbol}]/gu, '')
+    .toLowerCase();
+}
+
+function resolveCategory(target){
+  const options = Array.from(els.categorySelect.options)
+    .map(option => option.value);
+  const raw = String(target || '').trim();
+  return options.find(value => value === raw)
+    || options.find(value => value.trim() === raw)
+    || options.find(value => normalizeCategoryName(value) === normalizeCategoryName(raw))
+    || null;
+}
+
+function selectCategory(category, scrollToProducts = false){
+  activeCategory = category;
+  els.categorySelect.value = category;
+  renderProducts();
+
+  if(scrollToProducts){
+    const destination = document.getElementById('headingTitle')
+      || document.querySelector('.controls');
+    destination?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
 function renderCategorySelect(){
   const categories = [
     '全部',
@@ -607,8 +638,7 @@ els.search.addEventListener(
 els.categorySelect.addEventListener(
   'change',
   event => {
-    activeCategory = event.target.value;
-    renderProducts();
+    selectCategory(event.target.value);
   }
 );
 
@@ -824,37 +854,21 @@ async function loadActivity(){
       activityButton.classList.remove('hidden');
 
       activityButton.onclick = () => {
-        const categorySelect =
-          document.getElementById('categorySelect');
-
-        if(!categorySelect){
+        // 分類資料由商品讀取後建立；若仍在載入，提示稍後再試。
+        if(!allProducts.length){
+          window.alert('商品資料尚未載入完成，請稍後再試。');
           return;
         }
 
-        const hasCategory =
-          Array.from(categorySelect.options)
-            .some(
-              option =>
-                option.value === targetCategory
-            );
-
-        if(!hasCategory){
+        const matchedCategory = resolveCategory(targetCategory);
+        if(!matchedCategory){
+          window.alert('目前找不到活動指定的商品分類，請聯絡管理員確認活動設定。');
           return;
         }
 
-        categorySelect.value =
-          targetCategory;
-
-        categorySelect.dispatchEvent(
-          new Event('change')
-        );
-
-        document
-          .querySelector('.controls')
-          ?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
+        // 避免先前搜尋關鍵字使活動商品被隱藏。
+        els.search.value = '';
+        selectCategory(matchedCategory, true);
       };
     }else{
       activityButton.textContent = '';
