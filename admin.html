@@ -232,14 +232,6 @@
   .admin-nav-btn .nav-icon{font-size:19px;line-height:1.1}
   #adminView{padding-bottom:76px}
 }
-
-/* 第四階段：多活動後台 */
-.multi-activity-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
-.multi-activity-list{display:grid;gap:8px;margin-bottom:14px}
-.multi-activity-row{display:flex;align-items:center;gap:7px;padding:10px;border:1px solid var(--line);border-radius:12px;background:#fff}
-.multi-activity-info{flex:1;min-width:0;display:grid;gap:3px}.multi-activity-info strong{font-size:13px;overflow-wrap:anywhere}.multi-activity-info small{font-size:10px;color:var(--muted)}
-.multi-activity-delete{color:#b84f45}.activity-editor-caption{font-weight:900;color:var(--brown);font-size:15px;margin:14px 0}
-@media(max-width:600px){.multi-activity-row .btn{padding:8px;font-size:11px}}
 </style>
 </head>
 <body>
@@ -268,10 +260,7 @@
     <div class="activity-manager-title-wrap"><h3>🎉 客人端活動管理</h3><div class="collapse-meta activity-collapse-meta"><span id="activityAdminStatus" class="activity-status">讀取中</span><span class="activity-collapse-arrow">⌄</span></div></div>
   </div>
   <div class="activity-manager-body">
-  <div class="multi-activity-toolbar"><button id="newActivityBtn" class="btn btn-add" type="button">＋ 新增活動</button><span class="activity-help">可編輯多筆活動，依排序輪播</span></div>
-  <div id="multiActivityList" class="multi-activity-list"></div>
-  <form id="activityForm"><input id="activityEditingId" type="hidden"><div id="activityEditorCaption" class="activity-editor-caption">新增活動</div>
-  <div class="field"><label for="activitySortOrder">輪播順序（數字越小越前面）</label><input id="activitySortOrder" type="number" min="0" max="9999" value="10"></div>
+  <form id="activityForm">
     <div class="activity-switch-row">
       <label for="activityEnabled">顯示活動專區</label>
       <input id="activityEnabled" type="checkbox">
@@ -368,7 +357,7 @@
     <div class="activity-actions">
       <button id="saveActivityBtn" class="btn btn-add" type="submit">儲存活動</button>
     </div>
-    <div id="activityAdminHelp" class="activity-help">可建立多筆活動，啟用且符合活動日期的活動會輪播顯示。</div>
+    <div id="activityAdminHelp" class="activity-help">啟用後，客人端首頁上方會顯示此活動；有設定日期時，只會在活動期間顯示。</div>
   </form></div>
 </div>
 <div id="productPanel" class="admin-panel"><div class="summary"><div class="summary-card"><small>全部商品</small><strong id="totalCount">0</strong></div><div class="summary-card"><small>尚有庫存</small><strong id="stockCount">0</strong></div><div class="summary-card"><small>已下架</small><strong id="unlistedCount">0</strong></div></div>
@@ -926,81 +915,184 @@ els.addCategoryBtn.addEventListener("click",addCategory);els.addBtn.addEventList
 function switchAdminPanel(panel){if(panel==="categories")toggleCategoryManager(true);if(panel==="activity")toggleActivityManager(true);const targets={products:document.getElementById("productPanel"),categories:els.categoryManager,activity:els.activityManager};Object.entries(targets).forEach(([key,node])=>node.classList.toggle("hidden",key!==panel));document.querySelectorAll(".admin-nav-btn").forEach(b=>{const active=b.dataset.panel===panel;b.classList.toggle("active",active);b.setAttribute("aria-current",active?"page":"false")});window.scrollTo({top:0,behavior:"smooth"})}
 document.querySelectorAll(".admin-nav-btn").forEach(b=>b.addEventListener("click",()=>switchAdminPanel(b.dataset.panel)));
 els.resetFiltersBtn.addEventListener("click",()=>{[els.searchInput,els.categoryFilter,els.warehouseFilter,els.listingFilter,els.expiryFilter].forEach(x=>x.value="");renderProducts()});
-// 第四階段：後台多活動管理；商品管理及登入流程維持不變。
-let managedActivities=[];
-let multiActivityAvailable=false;
-const multiList=document.getElementById('multiActivityList');
-const activityEditingId=document.getElementById('activityEditingId');
-const activitySortOrder=document.getElementById('activitySortOrder');
-const activityEditorCaption=document.getElementById('activityEditorCaption');
-function fillActivityEditor(a={}){
- activityEditingId.value=a.id||'';
- activityEditorCaption.textContent=a.id?`編輯活動 #${a.id}`:'新增活動';
- activitySortOrder.value=a.sort_order??(managedActivities.length+1)*10;
- els.activityEnabled.checked=a.enabled??true;
- els.activityBadgeInput.value=a.badge||'🎉 最新活動';
- els.activityTitleInput.value=a.title||'';
- els.activityDescriptionInput.value=a.description||'';
- els.activityButtonText.value=a.button_text||'查看活動商品';
- buildActivityCategoryOptions(a.target_category||'');
- els.activityStartDate.value=a.start_date||'';els.activityEndDate.value=a.end_date||'';
- clearActivityPreviewObjectUrl();activityImageMarkedForRemoval=false;els.activityImageFile.value='';
- els.activityCurrentImageUrl.value=a.image_url||'';
- if(a.image_url){els.activityImagePreview.src=a.image_url;els.activityImagePreviewWrap.classList.remove('hidden');}
- else{els.activityImagePreview.removeAttribute('src');els.activityImagePreviewWrap.classList.add('hidden');}
-}
-function renderManagedActivities(){multiList.innerHTML='';
- managedActivities.forEach(a=>{
-  const row=document.createElement('div');row.className='multi-activity-row';
-  const info=document.createElement('div');info.className='multi-activity-info';
-  const name=document.createElement('strong');name.textContent=`${a.enabled?'🟢':'⚪'} ${a.title||'未命名活動'}`;
-  const sub=document.createElement('small');sub.textContent=`順序 ${a.sort_order??0}｜${a.start_date||'不限開始'} ～ ${a.end_date||'不限結束'}`;
-  info.append(name,sub);row.append(info);
-  const edit=document.createElement('button');edit.type='button';edit.className='btn';edit.textContent='編輯';edit.onclick=()=>{fillActivityEditor(a);els.activityForm.scrollIntoView({behavior:'smooth',block:'start'});};
-  const del=document.createElement('button');del.type='button';del.className='btn multi-activity-delete';del.textContent='刪除';del.onclick=()=>deleteManagedActivity(a);
-  row.append(edit,del);multiList.append(row);
- });
-}
 async function loadActivityAdmin(){
- const {data,error}=await db.from('site_activities').select('id,enabled,badge,title,description,image_url,button_text,target_category,start_date,end_date,sort_order').order('sort_order',{ascending:true}).order('id',{ascending:true});
- if(error){multiActivityAvailable=false;els.activityAdminStatus.textContent='需要資料庫升級';els.activityAdminStatus.classList.remove('on');els.activityAdminHelp.textContent='請先執行 ZIP 中的「01_先執行_Supabase_SQL.sql」，再重新整理後台。原有單筆活動不會被刪除。';els.saveActivityBtn.disabled=true;document.getElementById('newActivityBtn').disabled=true;multiList.textContent='尚未啟用多活動資料表。';return;}
- multiActivityAvailable=true;managedActivities=data||[];els.saveActivityBtn.disabled=false;document.getElementById('newActivityBtn').disabled=false;
- els.activityAdminStatus.textContent=`${managedActivities.filter(a=>a.enabled).length} 筆已啟用`;els.activityAdminStatus.classList.toggle('on',managedActivities.some(a=>a.enabled));
- els.activityAdminHelp.textContent='多個活動依排序輪播；活動日期及啟用狀態會決定客人端是否顯示。';
- renderManagedActivities();
- const editing=managedActivities.find(a=>String(a.id)===activityEditingId.value);
- fillActivityEditor(editing||{});
+  const {data,error}=await db
+    .from("site_activity")
+    .select("id,enabled,badge,title,description,image_url,button_text,target_category,start_date,end_date,updated_at")
+    .eq("id",1)
+    .maybeSingle();
+
+  if(error){
+    els.activityAdminStatus.textContent="需先建立資料表";
+    els.activityAdminStatus.classList.remove("on");
+    els.activityAdminHelp.textContent="請先在 Supabase SQL Editor 完成活動資料表設定，完成後按重新整理。";
+    els.saveActivityBtn.disabled=true;
+    return;
+  }
+
+  els.saveActivityBtn.disabled=false;
+
+  const a=data||{};
+
+  els.activityEnabled.checked=!!a.enabled;
+  els.activityBadgeInput.value=a.badge||"🎉 最新活動";
+  els.activityTitleInput.value=a.title||"揪愛買活動專區";
+  els.activityDescriptionInput.value=a.description||"";
+
+  els.activityButtonText.value=a.button_text||"";
+  buildActivityCategoryOptions(a.target_category||"");
+
+  els.activityStartDate.value=a.start_date||"";
+  els.activityEndDate.value=a.end_date||"";
+
+  clearActivityPreviewObjectUrl();
+activityImageMarkedForRemoval=false;
+  
+  els.activityImageFile.value="";
+  els.activityCurrentImageUrl.value=a.image_url||"";
+
+  if(a.image_url){
+    els.activityImagePreview.src=a.image_url;
+    els.activityImagePreviewWrap.classList.remove("hidden");
+  }else{
+    els.activityImagePreview.removeAttribute("src");
+    els.activityImagePreviewWrap.classList.add("hidden");
+  }
+
+  els.activityAdminStatus.textContent=
+    a.enabled?"顯示中":"未顯示";
+
+  els.activityAdminStatus.classList.toggle(
+    "on",
+    !!a.enabled
+  );
 }
-document.getElementById('newActivityBtn').addEventListener('click',()=>{fillActivityEditor({});els.activityForm.scrollIntoView({behavior:'smooth',block:'start'});});
-async function deleteManagedActivity(a){
- if(!confirm(`確定刪除「${a.title||'此活動'}」？刪除後無法復原。`))return;
- const {error}=await db.from('site_activities').delete().eq('id',a.id);
- if(error){toast('刪除失敗：'+error.message);return;}
- // 圖片保留在儲存空間，避免誤刪其他活動可能共用的檔案。
- toast('活動已刪除');activityEditingId.value='';await loadActivityAdmin();
-}
-els.activityForm.addEventListener('submit',async event=>{
- event.preventDefault();if(!multiActivityAvailable){toast('請先升級資料庫');return;}
- const title=els.activityTitleInput.value.trim();if(!title){toast('請輸入活動標題');return;}
- if(els.activityStartDate.value&&els.activityEndDate.value&&els.activityStartDate.value>els.activityEndDate.value){toast('活動結束日期不能早於開始日期');return;}
- els.saveActivityBtn.disabled=true;els.saveActivityBtn.textContent='儲存中...';
- const file=els.activityImageFile.files?.[0]||null;
- let uploaded=null;
- try{
-  if(file)uploaded=await uploadActivityImage(file);
-  const payload={enabled:els.activityEnabled.checked,badge:els.activityBadgeInput.value.trim()||'🎉 最新活動',title,
-    description:els.activityDescriptionInput.value.trim()||null,
-    image_url:uploaded?.publicUrl||(activityImageMarkedForRemoval?null:(els.activityCurrentImageUrl.value.trim()||null)),
-    button_text:els.activityButtonText.value.trim()||'查看活動商品',
-    target_category:els.activityTargetCategory.value||null,
-    start_date:els.activityStartDate.value||null,end_date:els.activityEndDate.value||null,
-    sort_order:Number(activitySortOrder.value)||0,updated_at:new Date().toISOString()};
-  if(activityEditingId.value)payload.id=Number(activityEditingId.value);
-  const {error}=await db.from('site_activities').upsert(payload).select('id').single();
-  if(error)throw error;
-  toast('活動已儲存');activityEditingId.value='';await loadActivityAdmin();
- }catch(err){if(uploaded?.path)await db.storage.from(STORAGE_BUCKET).remove([uploaded.path]);toast('活動儲存失敗：'+(err?.message||'未知錯誤'));}
- finally{els.saveActivityBtn.disabled=false;els.saveActivityBtn.textContent='儲存活動';}
+
+els.activityForm.addEventListener("submit",async event=>{
+  event.preventDefault();
+
+  const title=
+    els.activityTitleInput.value.trim();
+
+  if(!title){
+    toast("請輸入活動標題");
+    return;
+  }
+
+  if(
+    els.activityStartDate.value &&
+    els.activityEndDate.value &&
+    els.activityStartDate.value >
+      els.activityEndDate.value
+  ){
+    toast("活動結束日期不能早於開始日期");
+    return;
+  }
+
+  els.saveActivityBtn.disabled=true;
+  els.saveActivityBtn.textContent="儲存中...";
+
+  const oldImageUrl=
+    els.activityCurrentImageUrl.value.trim();
+
+  const file=
+    els.activityImageFile.files?.[0]||null;
+
+  let finalImageUrl=
+    activityImageMarkedForRemoval
+      ? null
+      : (oldImageUrl||null);
+
+  let newUpload=null;
+
+  try{
+    if(file){
+      newUpload=
+        await uploadActivityImage(file);
+
+      finalImageUrl=
+        newUpload.publicUrl;
+    }
+
+    const payload={
+      id:1,
+      enabled:els.activityEnabled.checked,
+      badge:
+        els.activityBadgeInput.value.trim()||
+        "🎉 最新活動",
+      title,
+      description:
+        els.activityDescriptionInput.value.trim()||
+        null,
+      image_url:finalImageUrl,
+      button_text:
+        els.activityButtonText.value.trim()||
+        null,
+      target_category:
+        els.activityTargetCategory.value||
+        null,
+      start_date:
+        els.activityStartDate.value||
+        null,
+      end_date:
+        els.activityEndDate.value||
+        null,
+      updated_at:
+        new Date().toISOString()
+    };
+
+    const {error}=await db
+      .from("site_activity")
+      .upsert(
+        payload,
+        {onConflict:"id"}
+      );
+
+    if(error)throw error;
+
+    if(
+      oldImageUrl &&
+      (
+        (
+          newUpload?.publicUrl &&
+          oldImageUrl!==newUpload.publicUrl
+        ) ||
+        (
+          activityImageMarkedForRemoval &&
+          !newUpload
+        )
+      )
+    ){
+      await removeStorageImageByUrl(
+        oldImageUrl
+      );
+    }
+
+    toast(
+      "活動已儲存，客人端會同步更新"
+    );
+
+    await loadActivityAdmin();
+
+  }catch(err){
+
+    if(newUpload?.path){
+      await db.storage
+        .from(STORAGE_BUCKET)
+        .remove([newUpload.path]);
+    }
+
+    toast(
+      "活動儲存失敗："+
+      (err?.message||"未知錯誤")
+    );
+
+  }finally{
+
+    els.saveActivityBtn.disabled=false;
+    els.saveActivityBtn.textContent=
+      "儲存活動";
+  }
 });
 
 function toggleCategoryManager(forceOpen=null){
