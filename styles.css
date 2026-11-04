@@ -496,3 +496,27 @@ body.modal-open{overflow:hidden}
     min-height:180px;
   }
 }
+
+/* ===== 2026-11-04 活動 Banner 精簡版：僅調整視覺，不更動資料與跳轉 ===== */
+.activity-card{border-radius:18px;margin-bottom:10px}
+.activity-image-wrap{display:flex;align-items:center;justify-content:center;min-height:0}
+.activity-image{width:100%;height:150px;max-height:none;object-fit:contain}
+.activity-main{padding:14px 16px}
+.activity-badge{padding:4px 9px;font-size:10px}
+.activity-card h2{font-size:20px;line-height:1.3;margin:7px 0 5px}
+.activity-card p{font-size:12px;line-height:1.5}
+.activity-period{margin-top:8px;padding:5px 8px;font-size:10px}
+.activity-button{width:auto;max-width:100%;margin-top:10px;padding:9px 15px;font-size:12px;border-radius:10px}
+@media(min-width:760px){
+  .activity-card{grid-template-columns:minmax(0,39%) minmax(0,61%);min-height:0}
+  .activity-image-wrap{min-height:0}
+  .activity-image{height:220px;max-height:none;object-fit:contain}
+  .activity-main{padding:16px 22px;justify-content:center}
+  .activity-card h2{font-size:23px;margin:7px 0 5px}
+  .activity-card p{font-size:12px;line-height:1.5}
+  .activity-button{padding:9px 16px}
+  .activity-image-wrap.hidden + .activity-main{min-height:110px}
+}
+@media(max-width:759px){
+  .activity-image{height:145px}
+}
