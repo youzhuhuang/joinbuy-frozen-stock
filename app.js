@@ -184,6 +184,34 @@ function renderCategorySelect(){
   els.categorySelect.value = activeCategory;
 }
 
+// 比對後台活動目標分類：容許前後空白、Emoji 與裝飾符號差異。
+function normalizeCategoryName(value){
+  return String(value || '').normalize('NFKC').replace(/[\p{Extended_Pictographic}\p{Emoji_Component}\p{Variation_Selector}\p{White_Space}\p{Punctuation}\p{Symbol}]/gu, '').toLowerCase();
+}
+function resolveCategory(target){
+  const options = [...els.categorySelect.options].map(option => option.value).filter(value => value !== '全部');
+  const raw = String(target || '').trim();
+  return options.find(value => value === raw)
+    || options.find(value => value.trim() === raw)
+    || options.find(value => normalizeCategoryName(value) === normalizeCategoryName(raw))
+    || null;
+}
+// 切換分類後同步更新下拉選單與商品清單；活動按鈕也共用此功能。
+function selectCategory(category, scrollToProducts = false){
+  activeCategory = category;
+  els.categorySelect.value = category;
+  renderProducts();
+  if(scrollToProducts){
+    const heading = document.getElementById('productsHeading');
+    if(heading){
+      const header = document.querySelector('header');
+      const offset = header ? header.getBoundingClientRect().height + 12 : 16;
+      const top = heading.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({top: Math.max(0, top), behavior: 'smooth'});
+    }
+  }
+}
+
 function renderProducts(){
   const q =
     els.search.value
@@ -640,7 +668,7 @@ els.search.addEventListener(
 els.categorySelect.addEventListener(
   'change',
   event => {
-    selectCategory(event.target.value, false);
+    selectCategory(event.target.value, true);
   }
 );
 
@@ -743,7 +771,20 @@ function openActivityModal(){const a=carouselActivities[carouselIndex];if(!a)ret
  activityUI.description.textContent=a.description||'活動詳情請依門市公告為準。';
  const dates=[a.start_date,a.end_date].filter(Boolean);activityUI.period.textContent=dates.length?'活動期間：'+dates.join(' ～ '):'';activityUI.period.classList.toggle('hidden',!dates.length);
  const category=(a.target_category||'').trim();activityUI.products.textContent=a.button_text||'查看活動商品';activityUI.products.classList.toggle('hidden',!category);
- activityUI.products.onclick=()=>{const exists=[...els.categorySelect.options].some(x=>x.value===category);if(!exists){alert('目前此活動分類沒有上架商品，請稍後再查看。');return;}closeActivityModal();els.search.value='';selectCategory(category,true);};
+ activityUI.products.onclick=()=>{
+   const matched=resolveCategory(category);
+   if(!matched){
+     alert('目前找不到此活動對應的商品分類。請確認後台活動「目標分類」與商品分類名稱一致。');
+     return;
+   }
+   els.search.value='';
+   closeActivityModal();
+   // 關閉彈窗後再更新分類並捲動，避免焦點還原使畫面跳回活動圖片。
+   selectCategory(matched,true);
+   const heading=document.getElementById('productsHeading');
+   if(heading){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});}
+ };
+
  activityUI.modal.classList.remove('hidden');activityUI.modal.setAttribute('aria-hidden','false');document.body.classList.add('activity-modal-open');activityUI.close.focus();
 }
 async function loadActivity(){
