@@ -826,3 +826,9 @@ body{
 @media(max-width:759px){
   .activity-slide{height:clamp(145px,38vw,210px)}
 }
+
+/* 第四階段最終修正：原圖完整顯示，不裁切、不模糊、不限制圖片高度 */
+.activity-slide{height:auto!important;min-height:0!important;max-height:none!important;background:#fffdf9!important;background-image:none!important;overflow:hidden;}
+.activity-slide img{display:block!important;width:100%!important;height:auto!important;max-width:100%!important;max-height:none!important;object-fit:contain!important;object-position:center!important;box-shadow:none!important;}
+.activity-slide::before{display:none!important;}
+.category-feature{display:none!important;}

@@ -522,16 +522,15 @@ async function loadProducts(){
     client
       .from('products')
       .select(
-        'id,name,category,price,spec,stock_status,listing_status,image_url,description,expiry_date,created_at'
+        'id,name,category,price,spec,stock_status,listing_status,image_url,description,expiry_date,created_at,sort_order'
       )
       .eq(
         'listing_status',
         'listed'
       )
-      .order(
-        'created_at',
-        { ascending:false }
-      ),
+      .order('sort_order',{ascending:true,nullsFirst:false})
+      .order('created_at',{ascending:false})
+      .order('id',{ascending:false}),
 
     client
       .from('product_variants')
@@ -552,6 +551,17 @@ async function loadProducts(){
       )
 
   ]);
+
+  // 若舊資料表尚未建立商品排序欄位，退回原本讀取方式，避免整站無商品。
+  if(productResult.error && /sort_order|column.*does not exist/i.test(productResult.error.message||'')){
+    const fallback = await client.from('products')
+      .select('id,name,category,price,spec,stock_status,listing_status,image_url,description,expiry_date,created_at')
+      .eq('listing_status','listed')
+      .order('created_at',{ascending:false});
+    productResult.data=fallback.data;
+    productResult.error=fallback.error;
+    if(!fallback.error) console.warn('products.sort_order 尚未建立，暫時依建立時間排序。');
+  }
 
   if(productResult.error){
 
